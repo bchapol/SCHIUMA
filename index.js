@@ -7,6 +7,7 @@ app.use(express.urlencoded({extended: true}));
 
 /* ROUTES */
 app.use(require('./routes/roles'));
+app.use(require('./routes/users'));
 app.use(require('./routes/employees'));
 
 const PORT = process.env.PORT;
