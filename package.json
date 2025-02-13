@@ -1,0 +1,22 @@
+{
+  "name": "schiuma",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bchapol/SCHIUMA.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bchapol/SCHIUMA/issues"
+  },
+  "homepage": "https://github.com/bchapol/SCHIUMA#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
