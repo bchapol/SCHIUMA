@@ -17,6 +17,7 @@
   "homepage": "https://github.com/bchapol/SCHIUMA#readme",
   "description": "",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "express": "^4.21.2",
     "mysql": "^2.18.1"
   },
