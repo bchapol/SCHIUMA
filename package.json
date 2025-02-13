@@ -17,6 +17,10 @@
   "homepage": "https://github.com/bchapol/SCHIUMA#readme",
   "description": "",
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.7"
   }
 }
