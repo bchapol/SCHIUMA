@@ -4,7 +4,7 @@ const dotenv = require ("dotenv");
 const bcrypt = require('bcryptjs');
 dotenv.config();
 
-/* CONNECTION TO DB */
+
 const {connection} = require("../config/config.db");
 
 const getUsers = (request, response)=>{
@@ -19,7 +19,7 @@ const getUsers = (request, response)=>{
 const postUsers = (request, response) => {
     const {name, email, phone, image} = request.body;
     
-    connection.query("INSERT INTO users (status, name, email, phone, image) VALUES (1,?,?,?,?) ",
+    connection.query("INSERT INTO users (name, email, phone, image) VALUES (?,?,?,?) ",
     [name, email, phone, image],
     (error, results) => {
         if(error)

@@ -46,9 +46,9 @@ router.post('/roles', (req, res) => {
 
 router.put('/roles/:role', (req, res) => {
     const roleId = req.params.role;
-    const {name, status} = req.body;
+    const {name} = req.body;
 
-    connection.query('UPDATE roles SET name = ?, status = ? WHERE pk_role = ?', [name, status, roleId], (error, results) => {
+    connection.query('UPDATE roles SET name = ? WHERE pk_role = ?', [name,  roleId], (error, results) => {
         if (error) {
             res.status(500).json({ error: error.message });
             return;

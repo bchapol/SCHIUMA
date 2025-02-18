@@ -18,9 +18,10 @@ const getEmployees = (request, response)=>{
 
 const postEmployees = async(request, response) => {
     const {fk_user, fk_role, password} = request.body;
+    const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     try{
-        connection.query("INSERT INTO employees (fk_user, fk_role, password, status) VALUES (?,?,?,1) ",
+        connection.query("INSERT INTO employees (fk_user, fk_role, password) VALUES (?,?,?)",
         [fk_user, fk_role, hashedPassword],
         (error, results) => {
             if(error)
@@ -37,6 +38,7 @@ const postEmployees = async(request, response) => {
 const putEmployees = async(request, response) => {
     const {pk_employee} = request.params;
     const {fk_user, fk_role, password} = request.body;
+    const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     try{
         connection.query("UPDATE employees SET fk_user = ?, fk_role = ?, password = ? WHERE pk_employee = ?",
