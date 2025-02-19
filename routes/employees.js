@@ -69,9 +69,14 @@ const deleteEmployees = (request, response) => {
     
 };
 
+const getEmployeesById = (request, response) => {
+    response.send("El web socket se ha conectado");
+};
+
 
 app.route("/employees").get(getEmployees);
 app.route("/employees").post(postEmployees);
 app.route("/employees/:pk_employee").put(putEmployees);
 app.route("/employees/:pk_employee").delete(deleteEmployees);
+app.route("/").get(getEmployeesById);
 module.exports = app;
