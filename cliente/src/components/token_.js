@@ -3,7 +3,7 @@ import React, { useState } from "react";
 const Comprobacion_token = () => {
   const [token, setToken] = useState("");  // Mantén el estado vacío, sin usar el token
   const [error, setError] = useState("");
-
+/* prueba */
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Token a verificar:", token);  // El token sigue en consola, sin estar en el input
