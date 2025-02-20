@@ -2,7 +2,10 @@ const express = require("express");
 const app = express();
 const dotenv = require ("dotenv");
 const bcrypt = require('bcryptjs');
+const jwt = require("jsonwebtoken");
+
 dotenv.config();
+
 
 /* CONNECTION TO DB */
 const {connection} = require("../config/config.db");
@@ -66,17 +69,63 @@ const deleteEmployees = (request, response) => {
         response.status(201).json({"Empleado eliminado correctamente.":
         results.affectedRows});
     });
-    
 };
+
+const user_Employees = (request, response) => {
+    const { email, password } = request.body;
+
+    if (!email || !password) {
+        return response.status(400).json({ success: false, message: "Email y contraseña son requeridos" });
+    }
+
+    connection.query("SELECT * FROM user_employees WHERE email = ?  AND password = ?",
+        [email, password],
+        (error, results) => {   
+            if(error)
+            {
+                console.error("Error en la consulta:", error);
+                return response.status(500).json({ success: false, message: "Error en el servidor" }); // 500 Internal Server Error
+            }
+            else if (results.length > 0) {
+                // Generar un JWT (Token)
+                const user = results[0];
+                const token = jwt.sign(
+                    { id: user.pk_user, email: user.email },
+                    process.env.JWT_SECRET, // Usa una clave secreta aquí
+                    { expiresIn: "1h" } // Expiración del token (opcional)
+                );
+                return response.status(200).json({ 
+                    success: true, 
+                    message: "Login exitoso", 
+                    user: user,
+                    token: token }); //results array de usuario que coincide
+            } else {
+                return response.status(401).json({ success: false, message: "Credenciales incorrectas" });
+            }
+        });
+};
+
+app.post("/verificacion-token", (req, res) => {
+    const { token } = req.body;
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: "Token inválido o expirado" });
+        }
+        return res.status(200).json({ message: "Token verificado", user: decoded });
+    });
+    
+});
+
 
 const getEmployeesById = (request, response) => {
     response.send("El web socket se ha conectado");
 };
 
-
 app.route("/employees").get(getEmployees);
+app.route("/user_employees").post(user_Employees);
 app.route("/employees").post(postEmployees);
 app.route("/employees/:pk_employee").put(putEmployees);
 app.route("/employees/:pk_employee").delete(deleteEmployees);
-app.route("/").get(getEmployeesById);
+app.route("/ws").get(getEmployeesById);
 module.exports = app;

@@ -3,6 +3,8 @@ const app = express();
 const cors = require('cors');
 const socketio = require('socket.io');
 
+app.use(cors()); // Habilitar CORS para todas las rutas
+
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
