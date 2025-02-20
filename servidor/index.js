@@ -6,6 +6,7 @@ const socketio = require('socket.io');
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
+
 /* ROUTES */
 app.use(require('./routes/roles'));
 app.use(require('./routes/users'));
