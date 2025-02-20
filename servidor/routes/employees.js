@@ -84,7 +84,7 @@ const user_Employees = (request, response) => {
             if(error)
             {
                 console.error("Error en la consulta:", error);
-                return response.status(500).json({ success: false, message: "Error en el servidor" }); // 500 Internal Server Error
+                return response.status(500).json({ success: false, message: "Error en el servidor ddd" }); // 500 Internal Server Error
             }
             else if (results.length > 0) {
                 // Generar un JWT (Token)
@@ -94,6 +94,7 @@ const user_Employees = (request, response) => {
                     process.env.JWT_SECRET, // Usa una clave secreta aquí
                     { expiresIn: "1h" } // Expiración del token (opcional)
                 );
+                console.log("Token generado:", token);
                 return response.status(200).json({ 
                     success: true, 
                     message: "Login exitoso", 
@@ -129,3 +130,4 @@ app.route("/employees/:pk_employee").put(putEmployees);
 app.route("/employees/:pk_employee").delete(deleteEmployees);
 app.route("/ws").get(getEmployeesById);
 module.exports = app;
+
