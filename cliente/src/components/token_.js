@@ -1,27 +1,27 @@
 import React, { useState } from "react";
 
 const Comprobacion_token = () => {
-  const [token, setToken] = useState("");  // Mantén el estado vacío, sin usar el token
+  const [token, setToken] = useState("");
   const [error, setError] = useState("");
-  const [isVerified, setIsVerified] = useState(false); // Estado para controlar si el token está verificado
+  const [isVerified, setIsVerified] = useState(false); // Estado de verificacion del token
 
-/* prueba */
-  const handleSubmit = async (e) => {
+  const verificacionT = async (e) => {
     e.preventDefault();
-    console.log("Token a verificar:", token);  // El token sigue en consola, sin estar en el input
+    console.log("Token a verificar:", token);  // Envio de token a consola
 
+    // Envio de comprobacion a la funcion para verificar en estilo json
     try {
       const response = await fetch("http://localhost:3000/verificacion-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),  // Usamos el token que está en el estado
+        body: JSON.stringify({ token }),  
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        console.log("Token verificado:", data);// Se muestra en la consola
-        setIsVerified(true); // Marcamos el token como verificado
+        console.log("Token verificado:", data);
+        setIsVerified(true); // Si el status de la respuesta json es OK se envia a la pagina que el token ha sido verificado 
       } else {
         setError("Token inválido o expirado.");
       }
@@ -31,14 +31,14 @@ const Comprobacion_token = () => {
     }
   };
 
-  return (
+  return ( 
     <div>
       <h3>Ingresa el Token de Verificación</h3>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={verificacionT}>
         <input
           type="text"
           value={token}
-          onChange={(e) => setToken(e.target.value)}  // El token se mantiene en el estado pero no se pasa directamente en el formulario
+          onChange={(e) => setToken(e.target.value)}  
           placeholder="Ingrese su token"
         />
         <button type="submit">Verificar Token</button>
