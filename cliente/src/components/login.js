@@ -8,7 +8,7 @@ const Login = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const user_employees = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -45,7 +45,7 @@ const Login = () => {
         <h3 className="text-center mb-4 fw-bold text-primary">Bienvenido</h3>
         <p className="text-center text-muted mb-4">Por favor, inicia sesión para continuar</p>
         
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={user_employees}>
           <div className="mb-3">
             <label htmlFor="email" className="form-label fw-semibold">Correo electrónico</label>
             <input
