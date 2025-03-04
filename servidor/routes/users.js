@@ -58,8 +58,9 @@ const deleteUsers = (request, response) => {
 };
 
 
-app.route("/users").get(getUsers);
-app.route("/users").post(postUsers);
-app.route("/users/:pk_user").put(putUsers);
-app.route("/users/:pk_user").delete(deleteUsers);
+app.route("/api/users").get(getUsers);
+app.route("/api/users").post(postUsers);
+app.route("/api/users/:pk_user").put(putUsers);
+app.route("/api/users/:pk_user").delete(deleteUsers);
+
 module.exports = app;

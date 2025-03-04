@@ -11,7 +11,7 @@ const Comprobacion_token = () => {
     console.log("Token a verificar:", token);  // El token sigue en consola, sin estar en el input
 
     try {
-      const response = await fetch("http://localhost:3000/verificacion-token", {
+      const response = await fetch("http://localhost:3000/api/verificacion-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token }),  // Usamos el token que está en el estado
@@ -22,6 +22,7 @@ const Comprobacion_token = () => {
       if (response.ok) {
         console.log("Token verificado:", data);// Se muestra en la consola
         setIsVerified(true); // Marcamos el token como verificado
+        //navigate('/empleados');  
       } else {
         setError("Token inválido o expirado.");
       }

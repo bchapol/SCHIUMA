@@ -5,7 +5,7 @@ const Employees = () => {
     const [error, setError] = useState(null);
   
     useEffect(() => {
-      fetch("http://localhost:3000/user_employees")
+      fetch("http://localhost:3000/api/user_employees")
         .then((response) => {
           if (!response.ok) {
             throw new Error("Error al obtener los empleados");
