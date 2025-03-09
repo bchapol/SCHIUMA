@@ -8,7 +8,7 @@ dotenv.config();
 const {connection} = require("../config/config.db");
 
 const getUsers = (request, response)=>{
-    connection.query("SELECT * FROM users",
+    connection.query("SELECT * FROM users WHERE status = 1",
     (error, results) => {   
         if(error)
             throw error;

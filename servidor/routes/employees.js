@@ -12,9 +12,30 @@ dotenv.config();
 // conexion a la base de datos
 const {connection} = require("../config/config.db");
 
+//SELECT * FROM view_employees WHERE status = 1;
+
+const verifyToken = (req, res, next) => {
+    const token = req.headers["authorization"]; // Obtener el token del encabezado de la solicitud
+
+    if (!token) {
+        return res.status(403).json({ message: "Token requerido" }); // 403 Forbidden
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: "Token inválido o expirado" }); // 401 Unauthorized
+        }
+        req.user = decoded; // Guardar los datos del usuario en la solicitud
+        next(); // Continuar con la siguiente función
+    });
+};
+
+
+
 // Variables para conseguir la informacion de los empleados
 const getEmployees = (request, response)=>{
-    connection.query("SELECT fk_user, fk_role, status FROM employees", //Se hace una consulta para obtener los datos empleados
+    //connection.query("SELECT fk_user, fk_role, status FROM employees WHERE status = 1", //Se hace una consulta para obtener los datos empleados
+    connection.query("SELECT * FROM view_employees WHERE status = 1", //Se hace una consulta para obtener los datos empleados
     (error, results) => {    // Se ejecuta la consulta
         if(error) // Si hay un error
             throw error; // Se lanza el error
@@ -114,7 +135,7 @@ const user_Employees = (request, response) => {
     });
 };
 */
-/**/
+
 // Variables para hacer el inicio de sesion
 const user_Employees = (request, response) => {
     const { email, password } = request.body; // Se captura la informacion ingresada desde el front
@@ -172,12 +193,19 @@ const getEmployeesById = (request, response) => {
 };
 
 // Rutas
+app.route("/api/employees").get(verifyToken, getEmployees); 
+app.route("/api/employees").post(verifyToken, postEmployees); 
+app.route("/api/employees/:pk_employee").put(verifyToken, putEmployees); 
+app.route("/api/employees/:pk_employee").delete(verifyToken, deleteEmployees);
+app.route("/api/user_employees").post(user_Employees); // No requiere token
+
+/*
 app.route("/api/employees").get(getEmployees); // Ruta para obtener los datos de los empleados
 app.route("/api/user_employees").post(user_Employees); // Ruta para hacer el inicio de sesion
 app.route("/api/employees").post(postEmployees); // Ruta para ingresar los datos de un nuevo empleado
 app.route("/api/employees/:pk_employee").put(putEmployees); // Ruta para actualizar los datos de un empleado
 app.route("/api/employees/:pk_employee").delete(deleteEmployees); // Ruta para eliminar un empleado
-app.route("/api/ws").get(getEmployeesById);
+app.route("/api/ws").get(getEmployeesById);*/
 
 module.exports = app; // Se exporta la app
 

@@ -10,7 +10,7 @@ const getRoles = (req, res) => {
         return res.status(500).json({ error: 'Could not establish a connection to the database.' });
     }
 
-    connection.query('SELECT * FROM roles', (error, results) => {
+    connection.query('SELECT * FROM roles WHERE status = 1', (error, results) => {
         if (error) {
             res.status(500).json({ error: error.message });
             return;
@@ -20,12 +20,12 @@ const getRoles = (req, res) => {
 };
 
 const getRoleById = (req, res) => {
-    const roleId = req.params.role;
+    const pk_role = req.params.pk_role;
     if (!connection) {
         return res.status(500).json({ error: 'Could not establish a connection to the database.' });
     }
 
-    connection.query('SELECT * FROM roles WHERE pk_role = ?', [roleId], (error, results) => {
+    connection.query('SELECT * FROM roles WHERE pk_role = ?', [pk_role], (error, results) => {
         if (error) {
             res.status(500).json({ error: error.message });
             return;
@@ -42,13 +42,13 @@ const postRoles = (req, res) => {
             res.status(500).json({ error: error.message });
             return;
         }
-        res.status(200).json({"New role added": results.affectedRows});
+        res.status(200).json({"Nuevo rol añadido": results.affectedRows});
 
     });
 };
 
 const putRoles = (req, res) => {
-    const roleId = req.params.role;
+    const roleId = req.params.pk_role;
     const {name} = req.body;
 
     connection.query('UPDATE roles SET name = ? WHERE pk_role = ?', [name,  roleId], (error, results) => {
@@ -56,18 +56,18 @@ const putRoles = (req, res) => {
             res.status(500).json({ error: error.message });
             return;
         }
-        res.status(200).json({"Role updated": results.affectedRows});
+        res.status(200).json({"Rol actualizado correctamente": results.affectedRows});
     });
 };
 
 const deleteRoles = (req, res) => {
-    const roleId = req.params.role;
+    const roleId = req.params.pk_role;
     connection.query('UPDATE roles SET status = 0  WHERE pk_role = ?', [roleId], (error, results) => {
         if (error) {
             res.status(500).json({ error: error.message });
             return;
         }
-        res.status(200).json({"Role deleted": results.affectedRows});
+        res.status(200).json({"Rol eliminado correctamente": results.affectedRows});
     });
 };
 
