@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { connection } = require('../config/config.db'); // Asegúrate de que la ruta es correcta
 
-router.get('/providers', (req, res) => {
+router.get('/api/providers', (req, res) => {
     if (!connection) {
         return res.status(500).json({ error: 'Could not establish a connection to the database.' });
     }
@@ -16,7 +16,7 @@ router.get('/providers', (req, res) => {
     });
 });
 
-router.get('/providers/:provider', (req, res) => {
+router.get('/api/providers/:provider', (req, res) => {
     const providerId = req.params.provider;
     if (!connection) {
         return res.status(500).json({ error: 'Could not establish a connection to the database.' });
@@ -31,7 +31,7 @@ router.get('/providers/:provider', (req, res) => {
     });
 });
 
-router.post('/providers', (req, res) => {
+router.post('/api/providers', (req, res) => {
     const {user} = req.body;
 
     connection.query('INSERT INTO providers (fk_user) VALUES (?)', [user], (error, results) => {
@@ -44,7 +44,7 @@ router.post('/providers', (req, res) => {
     });
 });
 
-router.put('/providers/:provider', (req, res) => {
+router.put('/api/providers/:provider', (req, res) => {
     const providerId = req.params.provider;
     const {user} = req.body;
 

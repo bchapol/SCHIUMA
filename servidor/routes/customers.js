@@ -1,8 +1,27 @@
 const express = require('express');
 const router = express.Router();
 const { connection } = require('../config/config.db'); // Asegúrate de que la ruta es correcta
+const jwt = require("jsonwebtoken"); // Importamos JWT
 
-router.get('/customers', (req, res) => {
+// Middleware para verificar el token
+const verifyToken = (req, res, next) => {
+    const token = req.headers["authorization"];
+
+    if (!token) {
+        return res.status(403).json({ message: "Token requerido" });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({ message: "Token inválido o expirado" });
+        }
+        req.user = decoded;
+        next();
+    });
+};
+
+// Obtener todos los clientes
+router.get('/api/customers', verifyToken, (req, res) => {
     if (!connection) {
         return res.status(500).json({ error: 'Could not establish a connection to the database.' });
     }
@@ -16,7 +35,8 @@ router.get('/customers', (req, res) => {
     });
 });
 
-router.get('/customers/:customer', (req, res) => {
+// Obtener un cliente por ID
+router.get('/api/customers/:customer', verifyToken, (req, res) => {
     const customerId = req.params.customer;
     if (!connection) {
         return res.status(500).json({ error: 'Could not establish a connection to the database.' });
@@ -31,7 +51,8 @@ router.get('/customers/:customer', (req, res) => {
     });
 });
 
-router.post('/customers', (req, res) => {
+// Agregar un nuevo cliente
+router.post('/api/customers', verifyToken, (req, res) => {
     const {fk_user, rfc, address} = req.body;
 
     connection.query('INSERT INTO customers (fk_user, rfc, address) VALUES (?,?,?)', [fk_user, rfc, address], (error, results) => {
@@ -40,11 +61,11 @@ router.post('/customers', (req, res) => {
             return;
         }
         res.status(200).json({"New customer added": results.affectedRows});
-
     });
 });
 
-router.put('/customers/:customer', (req, res) => {
+// Actualizar un cliente por ID
+router.put('/api/customers/:customer', verifyToken, (req, res) => {
     const customerId = req.params.customer;
     const {fk_user, rfc, address} = req.body;
 
@@ -56,6 +77,5 @@ router.put('/customers/:customer', (req, res) => {
         res.status(200).json({"Customer updated": results.affectedRows});
     });
 });
-
 
 module.exports = router;
