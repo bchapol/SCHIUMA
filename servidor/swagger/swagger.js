@@ -15,29 +15,22 @@ const swaggerOptions = {
         bearerAuth: {
           type: 'http',
           scheme: 'bearer',
-          bearerFormat: 'JWT', // Formato del token
+          bearerFormat: 'JWT',
         },
       },
     },
-    security: [{ bearerAuth: [] }], // Habilita seguridad en todas las rutas
+    security: [{ bearerAuth: [] }], // Habilita autenticación en todas las rutas
   },
-  apis: ['./routes/employees.js'],
+  apis: ['./routes/*.js'], // Asegura que Swagger escanee todos los archivos de rutas
 };
+
 
 const swaggerDocs = swaggerJSDoc(swaggerOptions);
 
 module.exports = (app) => {
-  // Configuración de Swagger UI
   app.use('/api/documentacion', swaggerUi.serve, swaggerUi.setup(swaggerDocs, {
     swaggerOptions: {
-      requestInterceptor: (req) => {
-        // Si el token se encuentra en la cabecera, se agrega automáticamente
-        const token = req.headers['authorization'];
-        if (token) {
-          req.headers['Authorization'] = token;
-        }
-        return req;
-      },
+      persistAuthorization: true, // Mantiene el token después de autenticar en Swagger UI
     },
   }));
 };

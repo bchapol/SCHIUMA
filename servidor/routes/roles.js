@@ -1,29 +1,49 @@
-const express = require('express');
-const router = express.Router();
-const dotenv = require("dotenv");
-dotenv.config();
+const express = require('express'); // Llamamos a express
+const router = express.Router(); // Ejecutamos express router
+const dotenv = require("dotenv"); // Llamamos a dotenv
+dotenv.config(); // Configuración de variables de entorno
 
-const { connection } = require('../config/config.db'); // Asegúrate de que la ruta es correcta
-const jwt = require("jsonwebtoken"); // Importamos JWT
+const { connection } = require('../config/config.db'); // Conexion a la base de datos
+const jwt = require("jsonwebtoken"); // Llamamos a jsonwebtoken
 
 // Middleware para verificar el token
 const verifyToken = (req, res, next) => {
-    const token = req.headers["authorization"];
-
+    let token = req.headers["authorization"]; // Obtener el token del header
+    
     if (!token) {
         return res.status(403).json({ message: "Token requerido" });
+    }
+
+    // Asegurar que el token tiene el formato correcto "Bearer TOKEN_AQUI"
+    if (token.startsWith("Bearer ")) {
+        token = token.slice(7, token.length); // Remover "Bearer " para obtener solo el token
     }
 
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
         if (err) {
             return res.status(401).json({ message: "Token inválido o expirado" });
         }
-        req.user = decoded;
-        next();
+        req.user = decoded; // Guardar datos del usuario en la request
+        next(); // Continuar con la siguiente función
     });
 };
 
-// Obtener todos los roles activos
+/**
+ * @swagger
+ * /api/roles:
+ *   get:
+ *     summary: Obtener todos los roles activos
+ *     tags: [Roles]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de roles activos
+ *       403:
+ *         description: Token requerido
+ *       401:
+ *         description: Token inválido o expirado
+ */
 router.get("/api/roles", verifyToken, (req, res) => {
     if (!connection) {
         return res.status(500).json({ error: 'Could not establish a connection to the database.' });
@@ -38,9 +58,31 @@ router.get("/api/roles", verifyToken, (req, res) => {
     });
 });
 
-// Obtener un rol por ID
+/**
+ * @swagger
+ * /api/roles/{pk_role}:
+ *   get:
+ *     summary: Obtener un rol por ID
+ *     tags: [Roles]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: pk_role
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Rol encontrado
+ *       404:
+ *         description: Rol no encontrado
+ *       401:
+ *         description: Token inválido o expirado
+ */
 router.get("/api/roles/:pk_role", verifyToken, (req, res) => {
-    const roleId = req.params.pk_role; // Corregido pk_role -> roleId
+    const roleId = req.params.pk_role;
+
     if (!connection) {
         return res.status(500).json({ error: 'Could not establish a connection to the database.' });
     }
@@ -50,11 +92,38 @@ router.get("/api/roles/:pk_role", verifyToken, (req, res) => {
             res.status(500).json({ error: error.message });
             return;
         }
+        if (results.length === 0) {
+            return res.status(404).json({ message: "Rol no encontrado" });
+        }
         res.status(200).json(results);
     });
 });
 
-// Agregar un nuevo rol
+/**
+ * @swagger
+ * /api/roles:
+ *   post:
+ *     summary: Agregar un nuevo rol
+ *     tags: [Roles]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Rol creado correctamente
+ *       400:
+ *         description: Datos inválidos
+ *       401:
+ *         description: Token inválido o expirado
+ */
 router.post("/api/roles", verifyToken, (req, res) => {
     const { name } = req.body;
 
@@ -67,7 +136,37 @@ router.post("/api/roles", verifyToken, (req, res) => {
     });
 });
 
-// Actualizar un rol por ID
+/**
+ * @swagger
+ * /api/roles/{pk_role}:
+ *   put:
+ *     summary: Actualizar un rol por ID
+ *     tags: [Roles]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: pk_role
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Rol actualizado correctamente
+ *       400:
+ *         description: Datos inválidos
+ *       401:
+ *         description: Token inválido o expirado
+ */
 router.put("/api/roles/:pk_role", verifyToken, (req, res) => {
     const roleId = req.params.pk_role;
     const { name } = req.body;
@@ -81,7 +180,26 @@ router.put("/api/roles/:pk_role", verifyToken, (req, res) => {
     });
 });
 
-// Eliminar un rol (borrado lógico)
+/**
+ * @swagger
+ * /api/roles/{pk_role}:
+ *   delete:
+ *     summary: Eliminar un rol por ID (borrado lógico)
+ *     tags: [Roles]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: pk_role
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Rol eliminado correctamente
+ *       401:
+ *         description: Token inválido o expirado
+ */
 router.delete("/api/roles/:pk_role", verifyToken, (req, res) => {
     const roleId = req.params.pk_role;
 
@@ -94,4 +212,4 @@ router.delete("/api/roles/:pk_role", verifyToken, (req, res) => {
     });
 });
 
-module.exports = router;
+module.exports = router; 

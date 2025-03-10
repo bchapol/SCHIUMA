@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { connection } = require('../config/config.db'); // Asegúrate de que la ruta es correcta
 
+
 router.get('/api/providers', (req, res) => {
     if (!connection) {
         return res.status(500).json({ error: 'Could not establish a connection to the database.' });

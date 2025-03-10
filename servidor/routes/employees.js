@@ -61,6 +61,7 @@ const getEmployees = (request, response) => {
  * /api/employees:
  *   post:
  *     summary: Agregar un nuevo empleado
+ *     tags: [Empleados]
  *     description: Esta ruta agrega un nuevo empleado a la base de datos.
  *     security:
  *       - bearerAuth: []
@@ -103,6 +104,7 @@ const postEmployees = async (request, response) => {
  * /api/employees/{pk_employee}:
  *   put:
  *     summary: Actualizar un empleado
+ *     tags: [Empleados]
  *     description: Esta ruta actualiza los datos de un empleado específico.
  *     security:
  *       - bearerAuth: []
@@ -152,6 +154,7 @@ const putEmployees = async (request, response) => {
  * /api/employees/{pk_employee}:
  *   delete:
  *     summary: Eliminar un empleado
+ *     tags: [Empleados]
  *     description: Esta ruta elimina un empleado al actualizar su estado a 0.
  *     security:
  *       - bearerAuth: []
@@ -180,6 +183,7 @@ const deleteEmployees = (request, response) => {
  * /api/user_employees:
  *   post:
  *     summary: Inicio de sesión para un empleado
+ *     tags: [Empleados]
  *     description: Esta ruta permite a un empleado iniciar sesión y obtener un JWT.
  *     requestBody:
  *       required: true
@@ -238,6 +242,7 @@ const user_Employees = (request, response) => {
  * /api/verificacion-token:
  *   post:
  *     summary: "Verificar el token"
+ *     tags: [Empleados]
  *     description: "Esta ruta verifica la validez de un token JWT."
  *     requestBody:
  *       required: true
