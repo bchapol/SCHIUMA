@@ -173,6 +173,8 @@ const deleteEmployees = (request, response) => {
     });
 };
 
+// Inicio de sesión
+
 /**
  * @swagger
  * /api/user_employees:
