@@ -209,7 +209,7 @@ const user_Employees = (request, response) => {
 
     connection.query("SELECT * FROM user_employees WHERE email = ? AND password = ?", [email, password], (error, results) => {
         if (error) {
-            return response.status(500).json({ success: false, message: "Error en el servidor" });
+            return response.status(500).json({ success: false, message: "Error en el servidor". error });
         }
 
         if (results.length > 0) {
