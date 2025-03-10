@@ -15,92 +15,189 @@ const {connection} = require("../config/config.db");
 //SELECT * FROM view_employees WHERE status = 1;
 
 const verifyToken = (req, res, next) => {
-    const token = req.headers["authorization"]; // Obtener el token del encabezado de la solicitud
-
+    let token = req.headers["authorization"]; // Obtener el token del header
+    
     if (!token) {
-        return res.status(403).json({ message: "Token requerido" }); // 403 Forbidden
+        return res.status(403).json({ message: "Token requerido" });
+    }
+
+    // Asegurar que el token tiene el formato correcto "Bearer TOKEN_AQUI"
+    if (token.startsWith("Bearer ")) {
+        token = token.slice(7, token.length); // Remover "Bearer " para obtener solo el token
     }
 
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
         if (err) {
-            return res.status(401).json({ message: "Token inválido o expirado" }); // 401 Unauthorized
+            return res.status(401).json({ message: "Token inválido o expirado" });
         }
-        req.user = decoded; // Guardar los datos del usuario en la solicitud
+        req.user = decoded; // Guardar datos del usuario en la request
         next(); // Continuar con la siguiente función
     });
 };
 
-
-
-// Variables para conseguir la informacion de los empleados
-const getEmployees = (request, response)=>{
-    //connection.query("SELECT fk_user, fk_role, status FROM employees WHERE status = 1", //Se hace una consulta para obtener los datos empleados
-    connection.query("SELECT * FROM view_employees WHERE status = 1", //Se hace una consulta para obtener los datos empleados
-    (error, results) => {    // Se ejecuta la consulta
-        if(error) // Si hay un error
-            throw error; // Se lanza el error
-        response.status (200).json(results); // Se devuelve la informacion
+/**
+ * @swagger
+ * /api/employees:
+ *   get:
+ *     summary: Obtener todos los empleados
+ *     tags: [Empleados]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de empleados
+ *       401:
+ *         description: No autorizado
+ */
+const getEmployees = (request, response) => {
+    connection.query("SELECT * FROM user_employees WHERE status = 1", (error, results) => {
+        if (error) throw error;
+        response.status(200).json(results);
     });
 };
 
-// Variables para capturar la informacion del empleado
-const postEmployees = async(request, response) => {
-    const {fk_user, fk_role, password} = request.body; // Se captura la informacion ingresada desde el front
-    const salt = await bcrypt.genSalt(10); // Se genera un salto
-    const hashedPassword = await bcrypt.hash(password, salt); // Se encripta la contraseña
-    try{
-        connection.query("INSERT INTO employees (fk_user, fk_role, password) VALUES (?,?,?)", // Se hace una consulta para insertar los datos
-        [fk_user, fk_role, hashedPassword], // Se insertan los datos guardados en la bd 
-        (error, results) => {
-            if(error)
-                throw error;
-            response.status(201).json({"Empleado añadido correctamente.": // Se muestra un mensaje de exito
-            results.affectedRows});
-        });
-    }catch (error){
-        response.status(500).json({ error: "Error al encriptar la contraseña" }); // Se muestra un mensaje de error
+/**
+ * @swagger
+ * /api/employees:
+ *   post:
+ *     summary: Agregar un nuevo empleado
+ *     description: Esta ruta agrega un nuevo empleado a la base de datos.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fk_user:
+ *                 type: integer
+ *               fk_role:
+ *                 type: integer
+ *               password:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Empleado creado correctamente
+ *       500:
+ *         description: Error al encriptar la contraseña
+ */
+const postEmployees = async (request, response) => {
+    const { fk_user, fk_role, password } = request.body;
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    try {
+        connection.query("INSERT INTO employees (fk_user, fk_role, password) VALUES (?,?,?)",
+            [fk_user, fk_role, hashedPassword], (error, results) => {
+                if (error) throw error;
+                response.status(201).json({ "Empleado añadido correctamente.": results.affectedRows });
+            });
+    } catch (error) {
+        response.status(500).json({ error: "Error al encriptar la contraseña" });
     }
-    
 };
 
-// Variables para actualizar la informacion del empleado
-const putEmployees = async(request, response) => {
-    const {pk_employee} = request.params; // Se obtiene el id
-    const {fk_user, fk_role, password} = request.body; // Se captura la informacion ingresada desde el front
-    const salt = await bcrypt.genSalt(10); // Se genera un salto
-    const hashedPassword = await bcrypt.hash(password, salt); // Se encripta la contraseña
-    try{
-        // Se hace una consulta para actualizar los datos
+/**
+ * @swagger
+ * /api/employees/{pk_employee}:
+ *   put:
+ *     summary: Actualizar un empleado
+ *     description: Esta ruta actualiza los datos de un empleado específico.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: pk_employee
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fk_user:
+ *                 type: integer
+ *               fk_role:
+ *                 type: integer
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Empleado actualizado correctamente
+ *       500:
+ *         description: Error al encriptar la contraseña
+ */
+const putEmployees = async (request, response) => {
+    const { pk_employee } = request.params;
+    const { fk_user, fk_role, password } = request.body;
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    try {
         connection.query("UPDATE employees SET fk_user = ?, fk_role = ?, password = ? WHERE pk_employee = ?",
-        [fk_user, fk_role, hashedPassword, pk_employee],
-        (error, results) => {
-            if(error)
-                throw error;
-            response.status(201).json({"Datos de empleado actualizados correctamente.": // Se muestra un mensaje de exito
-            results.affectedRows});
-        });
-    }catch (error){
-        response.status(500).json({ error: "Error al encriptar la contraseña" }); // Se muestra un mensaje de error
+            [fk_user, fk_role, hashedPassword, pk_employee], (error, results) => {
+                if (error) throw error;
+                response.status(200).json({ "Datos de empleado actualizados correctamente.": results.affectedRows });
+            });
+    } catch (error) {
+        response.status(500).json({ error: "Error al encriptar la contraseña" });
     }
-    
 };
 
-// Variables para eliminar la informacion del empleado
+/**
+ * @swagger
+ * /api/employees/{pk_employee}:
+ *   delete:
+ *     summary: Eliminar un empleado
+ *     description: Esta ruta elimina un empleado al actualizar su estado a 0.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: pk_employee
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Empleado eliminado correctamente
+ */
 const deleteEmployees = (request, response) => {
-    const {pk_employee} = request.params; // Se obtiene el id
-    
-    connection.query("UPDATE employees SET status = 0 WHERE pk_employee = ? ", // Se hace una consulta para eliminar los datos
-        [pk_employee],
-        (error, results) => {
-            if(error)
-                throw error;
-        response.status(201).json({"Empleado eliminado correctamente.": // Se muestra un mensaje de error
-        results.affectedRows});
+    const { pk_employee } = request.params;
+    connection.query("UPDATE employees SET status = 0 WHERE pk_employee = ?", [pk_employee], (error, results) => {
+        if (error) throw error;
+        response.status(200).json({ "Empleado eliminado correctamente.": results.affectedRows });
     });
 };
 
-
-/*
+/**
+ * @swagger
+ * /api/user_employees:
+ *   post:
+ *     summary: Inicio de sesión para un empleado
+ *     description: Esta ruta permite a un empleado iniciar sesión y obtener un JWT.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Inicio de sesión exitoso, token generado
+ *       400:
+ *         description: Email y contraseña son requeridos
+ *       401:
+ *         description: Credenciales incorrectas
+ */
 const user_Employees = (request, response) => {
     const { email, password } = request.body;
 
@@ -108,71 +205,53 @@ const user_Employees = (request, response) => {
         return response.status(400).json({ success: false, message: "Email y contraseña son requeridos" });
     }
 
-    connection.query("SELECT * FROM user_employees WHERE email = ?", [email], async (error, results) => {
+    connection.query("SELECT * FROM user_employees WHERE email = ? AND password = ?", [email, password], (error, results) => {
         if (error) {
-            console.error("Error en la consulta:", error);
             return response.status(500).json({ success: false, message: "Error en el servidor" });
         }
-        
-        if (results.length === 0) {
+
+        if (results.length > 0) {
+            const user = results[0];
+            const token = jwt.sign(
+                { id: user.pk_user, email: user.email },
+                process.env.JWT_SECRET,
+                { expiresIn: "1h" }
+            );
+            return response.status(200).json({
+                success: true,
+                message: "Login exitoso",
+                user: user,
+                token: token
+            });
+        } else {
             return response.status(401).json({ success: false, message: "Credenciales incorrectas" });
         }
-
-        const user = results[0];  
-        const validPassword = await bcrypt.compare(password, user.password); 
-
-        if (!validPassword) {
-            return response.status(401).json({ success: false, message: "Credenciales incorrectas" });
-        }
-
-        const token = jwt.sign(
-            { id: user.pk_user, email: user.email },
-            process.env.JWT_SECRET,
-            { expiresIn: "1h" }
-        );
-
-        return response.status(200).json({ success: true, message: "Login exitoso", user, token });
     });
 };
-*/
 
-// Variables para hacer el inicio de sesion
-const user_Employees = (request, response) => {
-    const { email, password } = request.body; // Se captura la informacion ingresada desde el front
-
-    if (!email || !password) { // Si no se ingresan los datos
-        return response.status(400).json({ success: false, message: "Email y contraseña son requeridos" }); // 400 Bad Request
-    }
-
-    connection.query("SELECT * FROM user_employees WHERE email = ?  AND password = ?", // Se hace una consulta para obtener los datos
-        [email, password],
-        (error, results) => {   
-            if(error)
-            {
-                console.error("Error en la consulta:", error); // Error en la consulta
-                return response.status(500).json({ success: false, message: "Error en el servidor ddd" }); // 500 Internal Server Error
-            }
-            else if (results.length > 0) {
-                // Generar un JWT (Token)
-                const user = results[0]; // Se obtiene el usuario
-                const token = jwt.sign( // Se genera el token
-                    { id: user.pk_user, email: user.email }, // Datos del usuario
-                    process.env.JWT_SECRET, // Usa una clave secreta aquí
-                    { expiresIn: "1h" } // Expiración del token (opcional)
-                );
-                console.log("Token generado:", token); // Se imprimira en la consola el Token generado
-                return response.status(200).json({ // Se devuelve la informacion
-                    success: true, 
-                    message: "Login exitoso", 
-                    user: user,
-                    token: token }); //results array de usuario que coincide
-            } else {
-                // Credenciales incorrectas
-                return response.status(401).json({ success: false, message: "Credenciales incorrectas" });
-            }
-        });
-};
 /**/
+
+/**
+ * @swagger
+ * /api/verificacion-token:
+ *   post:
+ *     summary: "Verificar el token"
+ *     description: "Esta ruta verifica la validez de un token JWT."
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: "Token verificado exitosamente"
+ *       401:
+ *         description: "Token inválido o expirado"
+ */
 
 // Variables para comprobar el token
 app.post("/api/verificacion-token", (req, res) => {
