@@ -3,6 +3,9 @@ const app = express(); //Ejecutamos express
 const dotenv = require ("dotenv"); //Llamamos a dotenv
 const bcrypt = require('bcryptjs'); //Llamamos a bcrypt
 const jwt = require("jsonwebtoken"); //Llamamos a jsonwebtoken
+
+const multer = require("multer");
+const path = require("path");
 // express, dotenv, bcrypt, jwt son librerias instaladas en el package.json
 
 // dotenv para configurar las variables de entorno
@@ -34,6 +37,30 @@ const verifyToken = (req, res, next) => {
         next(); // Continuar con la siguiente función
     });
 };
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "users_images/"); // Directorio donde se guardarán las imágenes
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); // Nombre único para evitar duplicados
+    }
+});
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 2 * 1024 * 1024 }, // Límite de 2MB
+    fileFilter: (req, file, cb) => {
+        const filetypes = /jpeg|jpg|png/;
+        const mimetype = filetypes.test(file.mimetype);
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+
+        if (mimetype && extname) {
+            return cb(null, true);
+        }
+        cb(new Error("Solo se permiten archivos de imagen (JPG, JPEG, PNG)"));
+    }
+});
 
 /**
  * @swagger
@@ -85,18 +112,62 @@ const getEmployees = (request, response) => {
  *         description: Error al encriptar la contraseña
  */
 const postEmployees = async (request, response) => {
-    const { fk_user, fk_role, password } = request.body;
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    try {
-        connection.query("INSERT INTO employees (fk_user, fk_role, password) VALUES (?,?,?)",
-            [fk_user, fk_role, hashedPassword], (error, results) => {
-                if (error) throw error;
-                response.status(201).json({ "Empleado añadido correctamente.": results.affectedRows });
-            });
-    } catch (error) {
-        response.status(500).json({ error: "Error al encriptar la contraseña" });
+    const { pk_employee } = request.params;
+    const { name, email, phone, fk_role, password } = request.body;
+    const image = request.file ? `users_images/${request.file.filename}` : null;
+
+    if (!image) {
+        return response.status(400).json({ error: "La imagen es obligatoria" });
     }
+    
+    connection.beginTransaction(async(err) =>{
+        if(err){
+            return request.status(500).json({error: err.message});
+        }
+
+        try{
+            const salt = await bcrypt.genSalt(10);
+            const encryPass = await bcrypt.hash(password, salt);
+
+            connection.query(
+                "INSERT INTO users (name, email, phone, image) VALUES (?, ?, ?, ?)",
+                [name, email, phone, image],
+                (error, results) => {
+                    if(error){
+                        return connection.rollback(() => {
+                            results.status(500).json({error: error.message});
+                        });
+                    }
+
+                    const fk_user = results.pk_user;
+
+                    connection.query(
+                        "INSERT INTO employees (fk_user, fk_role, password) VALUES (?, ?, ?)",
+                        [fk_user, fk_role, encryPass],
+                        (error, response) => {
+                            if(error){
+                                return connection.rollback(() =>{
+                                    response.status(500).json({error: error.message});
+                                });
+                            }
+                            connection.commit((err) => {
+                                if (err) {
+                                    return connection.rollback(() => {
+                                        response.status(500).json({ error: err.message });
+                                    });
+                                }
+                                response.status(201).json({ message: "Empleado añadido correctamente" });
+                            });
+                        }
+                    )
+                }
+            )
+        }catch (error) {
+            connection.rollback(() => {
+                res.status(500).json({ error: error.message });
+            });
+        }
+    });
 };
 
 /**
@@ -105,7 +176,7 @@ const postEmployees = async (request, response) => {
  *   put:
  *     summary: Actualizar un empleado
  *     tags: [Empleados]
- *     description: Esta ruta actualiza los datos de un empleado específico.
+ *     description: Esta ruta actualiza los datos de un empleado específico, incluyendo la actualización de datos personales en la tabla de usuarios.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -117,37 +188,143 @@ const postEmployees = async (request, response) => {
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - phone
+ *               - fk_role
+ *               - status
+ *               - currentPassword
+ *               - newPassword
+ *               - image
  *             properties:
- *               fk_user:
- *                 type: integer
+ *               name:
+ *                 type: string
+ *                 description: Nombre del usuario
+ *               email:
+ *                 type: string
+ *                 description: Correo electrónico del usuario
+ *               phone:
+ *                 type: string
+ *                 description: Teléfono del usuario
  *               fk_role:
  *                 type: integer
- *               password:
+ *                 description: ID del rol del empleado
+ *               status:
+ *                 type: integer
+ *                 description: Estado del empleado (1: activo / 0: inactivo)
+ *               currentPassword:
  *                 type: string
+ *                 description: Contraseña actual del empleado (necesaria para validar cambios)
+ *               newPassword:
+ *                 type: string
+ *                 description: Nueva contraseña para el empleado (obligatoria)
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: Imagen del empleado (obligatoria)
  *     responses:
  *       200:
  *         description: Empleado actualizado correctamente
+ *       400:
+ *         description: La imagen es obligatoria o algún otro campo falta
+ *       401:
+ *         description: Contraseña actual incorrecta, ningun cambio se ha guardado
+ *       404:
+ *         description: Empleado no encontrado
  *       500:
- *         description: Error al encriptar la contraseña
+ *         description: Error interno del servidor
  */
+
 const putEmployees = async (request, response) => {
     const { pk_employee } = request.params;
-    const { fk_user, fk_role, password } = request.body;
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const { name, email, phone, fk_role, status, currentPassword, newPassword } = request.body;
+    const image = request.file ? `users_images/${request.file.filename}` : null;
+
+    if (!image) {
+        return response.status(400).json({ error: "La imagen es obligatoria" });
+    }
+    //console.log("Archivo recibido:", request.file);   !!!
     try {
-        connection.query("UPDATE employees SET fk_user = ?, fk_role = ?, password = ? WHERE pk_employee = ?",
-            [fk_user, fk_role, hashedPassword, pk_employee], (error, results) => {
+        connection.query(
+            "SELECT * FROM employees WHERE pk_employee = ?",
+            [pk_employee], (error, results) => {
                 if (error) throw error;
-                response.status(200).json({ "Datos de empleado actualizados correctamente.": results.affectedRows });
-            });
+
+                if (results.length === 0) {
+                    return response.status(404).json({ error: "Empleado no encontrado" });
+                }
+
+                //Password de bd
+                const currentPass = results[0].password;
+                //pk de user bd
+                const fk_user = results[0].fk_user;
+
+                bcrypt.compare(currentPassword, currentPass, (err, samePassword) => {
+                    if (err) return response.status(500).json({ error: err.message });
+
+                    if (!samePassword) {
+                        return response.status(401).json({ error: "Contraseña actual incorrecta, ningún cambio se ha guardado." });
+                    }
+
+                    // Iniciar transacción
+                    connection.beginTransaction((err) => { 
+                        if (err) {
+                            return response.status(500).json({ error: err.message });
+                        }
+
+                        bcrypt.genSalt(10, (err, salt) => {
+                            if (err) return connection.rollback(() => response.status(500).json({ error: err.message }));
+
+                            bcrypt.hash(newPassword, salt, (err, newPass) => {
+                                if (err) return connection.rollback(() => response.status(500).json({ error: err.message }));
+
+                                connection.query(
+                                    "UPDATE users SET name = ?, email = ?, phone = ?, image = ? WHERE pk_user = ?",
+                                    [name, email, phone, image, fk_user],
+                                    (error) => {
+                                        if (error) {
+                                            return connection.rollback(() => {
+                                                response.status(500).json({ error: error.message });
+                                            });
+                                        }
+
+                                        connection.query(
+                                            "UPDATE employees SET fk_role = ?, status = ?, password = ? WHERE pk_employee = ?",
+                                            [fk_role, status, newPass, pk_employee],
+                                            (error) => {
+                                                if (error) {
+                                                    return connection.rollback(() => {
+                                                        response.status(500).json({ error: error.message });
+                                                    });
+                                                }
+
+                                                connection.commit((err) => {
+                                                    if (err) {
+                                                        return connection.rollback(() => {
+                                                            response.status(500).json({ error: err.message });
+                                                        });
+                                                    }
+                                                    response.status(200).json({ message: "Empleado actualizado correctamente" });
+                                                });
+                                            }
+                                        );
+                                    }
+                                );
+                            });
+                        });
+                    });
+                });
+            }
+        );
     } catch (error) {
-        response.status(500).json({ error: "Error al encriptar la contraseña" });
+        response.status(500).json({ error: error.message });
     }
 };
+
 
 /**
  * @swagger
@@ -281,7 +458,7 @@ const getEmployeesById = (request, response) => {
 // Rutas
 app.route("/api/employees").get(verifyToken, getEmployees); 
 app.route("/api/employees").post(verifyToken, postEmployees); 
-app.route("/api/employees/:pk_employee").put(verifyToken, putEmployees); 
+app.route("/api/employees/:pk_employee").put(verifyToken, upload.single('image'), putEmployees);
 app.route("/api/employees/:pk_employee").delete(verifyToken, deleteEmployees);
 app.route("/api/user_employees").post(user_Employees); // No requiere token
 

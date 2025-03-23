@@ -3,6 +3,9 @@ const app = express();
 const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const path = require("path");
+
 
 dotenv.config();
 app.use(express.json());
@@ -31,6 +34,30 @@ const verifyToken = (req, res, next) => {
     });
 };
 
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "users_images/"); // Directorio donde se guardarán las imágenes
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); // Nombre único para evitar duplicados
+    }
+});
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 2 * 1024 * 1024 }, // Límite de 2MB
+    fileFilter: (req, file, cb) => {
+        const filetypes = /jpeg|jpg|png/;
+        const mimetype = filetypes.test(file.mimetype);
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+
+        if (mimetype && extname) {
+            return cb(null, true);
+        }
+        cb(new Error("Solo se permiten archivos de imagen (JPG, JPEG, PNG)"));
+    }
+});
+
 // Obtener usuarios activos
 
 /**
@@ -53,9 +80,19 @@ const getUsers = (req, res) => {
         if (error) {
             return res.status(500).json({ error: error.message });
         }
-        res.status(200).json(results);
+
+        // Agregar la URL completa de la imagen a cada usuario
+        const usersWithImageUrls = results.map(user => {
+            return {
+                ...user,
+                imageUrl: user.image ? `http://localhost:3000/users_images/${user.image}` : null
+            };
+        });
+
+        res.status(200).json(usersWithImageUrls);
     });
 };
+
 
 // Crear un nuevo usuario con contraseña cifrada
 
@@ -81,8 +118,6 @@ const getUsers = (req, res) => {
  *                 type: string
  *               image:
  *                 type: string
- *               password:
- *                 type: string
  *     responses:
  *       201:
  *         description: Usuario creado correctamente
@@ -95,28 +130,28 @@ const getUsers = (req, res) => {
 
 const postUsers = async (req, res) => {
     try {
-        const { name, email, phone, image, password } = req.body;
-        if (!name || !email || !phone || !password) {
+        const { name, email, phone } = req.body;
+        const image = req.file ? `users_images/${req.file.filename}` : null; // Ruta de la imagen
+
+        if (!name || !email || !phone || !image) {
             return res.status(400).json({ error: "Faltan campos obligatorios" });
         }
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
         connection.query(
-            "INSERT INTO users (name, email, phone, image, password) VALUES (?, ?, ?, ?, ?)",
-            [name, email, phone, image || null, hashedPassword],
+            "INSERT INTO users (name, email, phone, image) VALUES (?, ?, ?, ?)",
+            [name, email, phone, image],
             (error, results) => {
                 if (error) {
                     return res.status(500).json({ error: error.message });
                 }
-                res.status(201).json({ message: "Usuario añadido correctamente", affectedRows: results.affectedRows });
+                res.status(201).json({ message: "Usuario añadido correctamente", image, affectedRows: results.affectedRows });
             }
         );
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+
 
 // Actualizar usuario (incluyendo contraseña si se envía)
 
@@ -166,14 +201,21 @@ const postUsers = async (req, res) => {
 const putUsers = async (req, res) => {
     try {
         const { pk_user } = req.params;
-        const { name, email, phone, image, password } = req.body;
+        const { name, email, phone, password } = req.body;
+        const image = req.file ? `/uploads/${req.file.filename}` : null;
 
         if (!pk_user) {
             return res.status(400).json({ error: "Se requiere el ID del usuario" });
         }
 
-        let query = "UPDATE users SET name = ?, email = ?, phone = ?, image = ?";
-        let params = [name, email, phone, image];
+        // Construcción dinámica de la consulta SQL
+        let query = "UPDATE users SET name = ?, email = ?, phone = ?";
+        let params = [name, email, phone];
+
+        if (image) {
+            query += ", image = ?";
+            params.push(image);
+        }
 
         if (password) {
             const salt = await bcrypt.genSalt(10);
@@ -198,6 +240,7 @@ const putUsers = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
 
 // Eliminar usuario (cambio de estado)
 
@@ -247,8 +290,8 @@ const deleteUsers = (req, res) => {
 
 // Definición de rutas
 app.get("/api/users", verifyToken, getUsers);
-app.post("/api/users", postUsers);
-app.put("/api/users/:pk_user", verifyToken, putUsers);
+app.post("/api/users", upload.single("image"), verifyToken, postUsers);
+app.put("/api/users/:pk_user", verifyToken, upload.single("image"), putUsers);
 app.delete("/api/users/:pk_user", verifyToken, deleteUsers);
 
 module.exports = app;
