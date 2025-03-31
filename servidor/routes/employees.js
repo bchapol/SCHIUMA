@@ -1,25 +1,20 @@
-const express = require("express"); //Llamamos a express
-const app = express(); //Ejecutamos express
-const dotenv = require ("dotenv"); //Llamamos a dotenv
-const bcrypt = require('bcryptjs'); //Llamamos a bcrypt
-const jwt = require("jsonwebtoken"); //Llamamos a jsonwebtoken
+const express = require("express");
+const app = express(); 
+const dotenv = require ("dotenv"); 
+const bcrypt = require('bcryptjs'); 
+const jwt = require("jsonwebtoken"); 
 
 const multer = require("multer");
 const path = require("path");
-// express, dotenv, bcrypt, jwt son librerias instaladas en el package.json
 
-// dotenv para configurar las variables de entorno
 dotenv.config();
 
-
-// conexion a la base de datos
 const {connection} = require("../config/config.db");
 
 //SELECT * FROM view_employees WHERE status = 1;
 
 const verifyToken = (req, res, next) => {
     let token = req.headers["authorization"]; // Obtener el token del header
-    
     if (!token) {
         return res.status(403).json({ message: "Token requerido" });
     }
@@ -77,11 +72,22 @@ const upload = multer({
  *         description: No autorizado
  */
 const getEmployees = (request, response) => {
-    connection.query("SELECT * FROM user_employees WHERE status = 1", (error, results) => {
+    connection.query("SELECT * FROM view_employees WHERE status = 1", (error, results) => {
         if (error) throw error;
-        response.status(200).json(results);
+
+        const employees = results.map((employee) => {
+            // Verificar si hay una imagen guardada
+            if (employee.image) {
+                // Si la imagen existe, obtenemos el archivo binario de la base de datos
+                employee.image = `${employee.image.toString('base64')}`;
+            }
+            return employee;
+        });
+
+        response.status(200).json(employees);
     });
 };
+
 
 /**
  * @swagger
@@ -215,7 +221,7 @@ const postEmployees = async (request, response) => {
  *                 description: ID del rol del empleado
  *               status:
  *                 type: integer
- *                 description: Estado del empleado (1: activo / 0: inactivo)
+ *                 description: Estado del empleado 1 o 0
  *               currentPassword:
  *                 type: string
  *                 description: Contraseña actual del empleado (necesaria para validar cambios)
@@ -390,7 +396,7 @@ const user_Employees = (request, response) => {
 
     connection.query("SELECT * FROM user_employees WHERE email = ? AND password = ?", [email, password], (error, results) => {
         if (error) {
-            return response.status(500).json({ success: false, message: "Error en el servidor". error });
+            return response.status(500).json({ success: false, message: "Error en el servidor", error });
         }
 
         if (results.length > 0) {
@@ -412,7 +418,7 @@ const user_Employees = (request, response) => {
     });
 };
 
-/**/
+/**/ 
 
 /**
  * @swagger

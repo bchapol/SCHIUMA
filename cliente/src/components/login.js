@@ -20,17 +20,16 @@ const Login = () => {
         });
         
         if (!response.ok) {
-            const errorText = await response.text(); // Ver la respuesta en caso de error
+            const errorText = await response.text();
             throw new Error(`Error ${response.status}: ${errorText}`);
         }
         
         const data = await response.json();        
 
         if (response.ok) {
-            console.log("Token:", data.token);  // Muestra el token en consola
-            navigate('/comprobacion');  
+            navigate('/employees');  
             setIsAuthenticated(true);
-            console.log("Usuario autenticado:", data.user);
+            localStorage.setItem("token", data.token);
         } else {
             setError(data.message);
         }

@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require('cors');
 const socketio = require('socket.io');
+const path = require('path');
 
 // Importar configuración de Swagger
 const swaggerSetup = require('./swagger/swagger.js');
@@ -18,6 +19,7 @@ app.use(require('./routes/users'));
 app.use(require('./routes/providers'));
 app.use(require('./routes/categories'));
 app.use(require('./routes/employees'));
+app.use('/users_images', express.static(path.join(__dirname, 'users_images')));
 
 // Agregar la ruta para la documentación de Swagger
 
