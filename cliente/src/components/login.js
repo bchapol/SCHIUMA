@@ -28,7 +28,7 @@ const Login = () => {
 
         if (response.ok) {
             console.log("Token:", data.token);  // Muestra el token en consola
-            navigate('/addproduct');  
+            navigate('/products');  
             setIsAuthenticated(true);
             console.log("Usuario autenticado:", data.user);
             localStorage.setItem("token", data.token);
