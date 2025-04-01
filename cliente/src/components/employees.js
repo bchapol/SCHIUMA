@@ -43,7 +43,7 @@ const Employees = () => {
             <p>{employee.role}</p>
             {employee.image && (
               <div>
-              <img src={`http://localhost:3000/${employee.image}`} alt={employee.name} style={{ width: '100px', height: '100px' }} />
+              <img src={`http://localhost:3000/images/users/${employee.image}`} alt={employee.name} style={{ width: '100px', height: '100px' }} />
               </div>
             )}
           </div>

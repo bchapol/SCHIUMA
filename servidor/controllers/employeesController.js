@@ -22,7 +22,7 @@ const getEmployees = (request, response) => {
 const postEmployees = async (request, response) => {
     const { pk_employee } = request.params;
     const { name, email, phone, fk_role, password } = request.body;
-    const image = request.file ? `users_images/${request.file.filename}` : null;
+    const image = request.file ? `users/${request.file.filename}` : null;
 
     if (!image) {
         return response.status(400).json({ error: "La imagen es obligatoria" });
