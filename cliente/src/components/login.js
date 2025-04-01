@@ -27,15 +27,10 @@ const Login = () => {
         const data = await response.json();        
 
         if (response.ok) {
-<<<<<<< HEAD
-            navigate('/employees');  
-            setIsAuthenticated(true);
-=======
             console.log("Token:", data.token);  // Muestra el token en consola
             navigate('/addproduct');  
             setIsAuthenticated(true);
             console.log("Usuario autenticado:", data.user);
->>>>>>> 1970a5d6f31b58a51bcf70b5acd1779f3bf236da
             localStorage.setItem("token", data.token);
         } else {
             setError(data.message);
