@@ -4,6 +4,10 @@ const cors = require('cors');
 const socketio = require('socket.io');
 const path = require('path');
 
+//Variables de entorno
+const dotenv = require ("dotenv"); 
+dotenv.config();
+
 // Importar configuración de Swagger
 const swaggerSetup = require('./swagger/swagger.js');
 swaggerSetup(app);
