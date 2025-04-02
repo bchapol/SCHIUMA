@@ -57,7 +57,7 @@ const ProductTable = () => {
     };
 
     const handleEditProduct = (id) => {
-        navigate(`/edit-product/${id}`);
+        navigate(`/updateproduct/${id}`);
     };
 
     const handleDeleteProduct = async (id) => {
@@ -93,6 +93,17 @@ const ProductTable = () => {
                             <Nav.Link href="/">Inicio</Nav.Link>
                             <Nav.Link href="/products">Productos</Nav.Link>
                         </Nav>
+                        {user && (
+                            <div className="d-flex align-items-center text-white me-3">
+                                <img 
+                                    src={user.image} 
+                                    alt="User" 
+                                    className="rounded-circle" 
+                                    style={{ width: '40px', height: '40px', objectFit: 'cover', marginRight: '10px' }}
+                                />
+                                <span>{user.name}</span>
+                            </div>
+                        )}
                         <Button variant="outline-light" onClick={handleLogout}>Cerrar sesión</Button>
                     </Navbar.Collapse>
                 </Container>

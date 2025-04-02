@@ -5,6 +5,7 @@ import Login from "./components/login";
 import Employees from "./components/employees";
 import Comprobacion_token from "./components/token_";
 import Addproduct from "./components/addproducts";
+import Updateproduct from "./components/updateproducts";
 import Products from "./components/products";
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Route path="/comprobacion" element={<Comprobacion_token />} />
         <Route path="/addproduct" element={<Addproduct />} />
         <Route path="/products" element={<Products />} />
+        <Route path="/updateproduct/:id" element={<Updateproduct />} />
       </Routes>
     </Router>
   );
