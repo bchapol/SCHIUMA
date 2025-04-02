@@ -1,85 +1,179 @@
 const express = require('express');
 const router = express.Router();
-const { connection } = require('../config/config.db'); // Asegúrate de que la ruta es correcta
-const jwt = require("jsonwebtoken"); // Importa jsonwebtoken
-const dotenv = require("dotenv"); 
 
-dotenv.config(); // Carga las variables de entorno
+// Middlewares
+const verifyToken = require("../middlewares/verifyToken");
+const uploadPhotos = require("../middlewares/uploadPhotos");
 
-// Middleware para verificar el token
-const verifyToken = (req, res, next) => {
-    let token = req.headers["authorization"]; // Obtener el token del header
-    
-    if (!token) {
-        return res.status(403).json({ message: "Token requerido" });
-    }
+const { 
+    getProducts,
+    postProducts,
+    getProductsById,
+    putProducts,
+    deleteProducts
+} = require('../controllers/productsController');
 
-    // Asegurar que el token tiene el formato correcto "Bearer TOKEN_AQUI"
-    if (token.startsWith("Bearer ")) {
-        token = token.slice(7, token.length); // Remover "Bearer " para obtener solo el token
-    }
+/**
+ * @swagger
+ * /api/products:
+ *   get:
+ *     summary: Obtener todos los productos
+ *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de productos
+ *       401:
+ *         description: No autorizado
+ */
+router.get('/api/products', verifyToken, getProducts);
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ message: "Token inválido o expirado" });
-        }
-        req.user = decoded; // Guardar datos del usuario en la request
-        next(); // Continuar con la siguiente función
-    });
-};
+/**
+ * @swagger
+ * /api/products:
+ *   post:
+ *     summary: Agregar un nuevo producto
+ *     tags: [Productos]
+ *     description: Esta ruta agrega un nuevo producto a la base de datos. La imagen es obligatoria.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fk_provider:
+ *                 type: integer
+ *               fk_category:
+ *                 type: integer
+ *               name:
+ *                 type: string
+ *               expiration:
+ *                 type: string
+ *                 format: date
+ *               price:
+ *                 type: number
+ *                 format: float
+ *               stock:
+ *                 type: integer
+ *               description:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: Producto añadido correctamente
+ *       400:
+ *         description: La imagen es obligatoria o faltan datos
+ *       500:
+ *         description: Error en la transacción
+ */
+router.post('/api/products', verifyToken, uploadPhotos.single('image'), postProducts);
 
-router.get('/api/products', verifyToken, (req, res) => {
-    if (!connection) {
-        return res.status(500).json({ error: 'Could not establish a connection to the database.' });
-    }
+/**
+ * @swagger
+ * /api/products/{product}:
+ *   get:
+ *     summary: Obtener un producto por ID
+ *     tags: [Productos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: product
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del producto
+ *     responses:
+ *       200:
+ *         description: Información del producto
+ *       404:
+ *         description: Producto no encontrado
+ *       401:
+ *         description: No autorizado
+ */
+router.get('/api/products/:product', verifyToken, getProductsById);
 
-    connection.query('SELECT * FROM products', (error, results) => {
-        if (error) {
-            res.status(500).json({ error: error.message });
-            return;
-        }
-        res.status(200).json(results);
-    });
-});
+/**
+ * @swagger
+ * /api/products/{product}:
+ *   put:
+ *     summary: Actualizar un producto
+ *     tags: [Productos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: product
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del producto
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fk_provider:
+ *                 type: integer
+ *               fk_category:
+ *                 type: integer
+ *               name:
+ *                 type: string
+ *               expiration:
+ *                 type: string
+ *                 format: date
+ *               price:
+ *                 type: number
+ *                 format: float
+ *               stock:
+ *                 type: integer
+ *               description:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Producto actualizado correctamente
+ *       400:
+ *         description: Datos inválidos
+ *       404:
+ *         description: Producto no encontrado
+ *       500:
+ *         description: Error en la transacción
+ */
+router.put('/api/products/:product', verifyToken, putProducts);
 
-router.get('/api/products/:product', verifyToken, (req, res) => {
-    const productId = req.params.product;
-    if (!connection) {
-        return res.status(500).json({ error: 'Could not establish a connection to the database.' });
-    }
-
-    connection.query('SELECT * FROM products WHERE pk_product = ?', [productId], (error, results) => {
-        if (error) {            
-            res.status(500).json({ error: error.message });
-            return;
-        }
-        res.status(200).json(results);
-    });
-});
-
-router.post('/api/products', verifyToken, (req, res) => {
-    const {fk_provider, fk_category, name, price, stock, description, image} = req.body;
-
-    connection.query('INSERT INTO products (fk_provider, fk_category, name, price, stock, description, image) VALUES (?, ?, ?, ?, ?, ?, ?)', [fk_provider, fk_category, name, price, stock, description, image], (error, results) => {
-        if (error) {
-            res.status(500).json({ error: error.message });
-            return;
-        }
-        res.status(200).json({"New product added": results.affectedRows});
-    });
-});
-
-router.put('/api/products/:product', verifyToken, (req, res) => {
-    const productId = req.params.product;
-    const {fk_provider, fk_category, name, price, stock, description, image} = req.body;
-
-    connection.query('UPDATE products SET fk_provider = ?, fk_category = ?, name = ?, price = ?, stock = ?, description = ?, image = ? WHERE pk_product = ?', [fk_provider, fk_category, name, price, stock, description, image, productId], (error, results) => {
-        if (error) {
-            res.status(500).json({ error: error.message });
-            return;
-        }
-        res.status(200).json({"Product updated": results.affectedRows});
-    });
-});
+/**
+ * @swagger
+ * /api/products/{product}:
+ *   delete:
+ *     summary: Eliminar un producto
+ *     tags: [Productos]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: product
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del producto
+ *     responses:
+ *       200:
+ *         description: Producto eliminado correctamente
+ *       404:
+ *         description: Producto no encontrado
+ *       500:
+ *         description: Error en la transacción
+ */
+router.delete('/api/products/:product', verifyToken, deleteProducts);
 
 module.exports = router;
