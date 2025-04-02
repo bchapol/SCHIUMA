@@ -2,34 +2,13 @@ const express = require('express');
 const router = express.Router();
 const { connection } = require('../config/config.db'); // Asegúrate de que la ruta es correcta
 
+// Middlewares
+const verifyToken = require("../middlewares/verifyToken");
+const uploadPhotos = require("../middlewares/uploadPhotos");
 
-const verifyToken = (req, res, next) => {
-    let token = req.headers["authorization"]; // Obtener el token del header
-    
-    if (!token) {
-        return res.status(403).json({ message: "Token requerido" });
-    }
-
-    // Asegurar que el token tiene el formato correcto "Bearer TOKEN_AQUI"
-    if (token.startsWith("Bearer ")) {
-        token = token.slice(7, token.length); // Remover "Bearer " para obtener solo el token
-    }
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ message: "Token inválido o expirado" });
-        }
-        req.user = decoded; // Guardar datos del usuario en la request
-        next(); // Continuar con la siguiente función
-    });
-};
 
 router.get('/api/providers', verifyToken, (req, res) => {
-    if (!connection) {
-        return res.status(500).json({ error: 'Could not establish a connection to the database.' });
-    }
-
-    connection.query('SELECT * FROM providers', (error, results) => {
+    connection.query('SELECT * FROM view_providers WHERE status = 1', (error, results) => {
         if (error) {
             res.status(500).json({ error: error.message });
             return;

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar, Nav, Button, Container } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const ProductForm = () => {
+    const { pk_product } = useParams(); // Obtiene el ID del producto de la URL
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         fk_provider: '',
         fk_category: '',
@@ -18,13 +20,11 @@ const ProductForm = () => {
     const [categories, setCategories] = useState([]);
     const [message, setMessage] = useState('');
     const [error, setError] = useState(null);
-    const navigate = useNavigate();
 
     // Obtención de proveedores
     useEffect(() => {
         const fetchProviders = async () => {
             const token = localStorage.getItem("token");
-            console.log(token);
             if (!token) {
                 setError("No estás autenticado.");
                 return;
@@ -59,6 +59,7 @@ const ProductForm = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             const token = localStorage.getItem('token');
+            console.log(token);
             if (!token) {
                 setError("No estás autenticado.");
                 return;
@@ -88,6 +89,52 @@ const ProductForm = () => {
         fetchCategories();
     }, []);
 
+    // Obtener datos del producto para editar
+    useEffect(() => {
+        if (!pk_product) return;
+    
+        const fetchProduct = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setError("No estás autenticado.");
+                return;
+            }
+    
+            try {
+                const response = await fetch(`http://localhost:3000/api/products/${pk_product}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+    
+                if (response.ok) {
+                    const data = await response.json();
+                    if (Array.isArray(data) && data.length > 0) {
+                        const product = data[0]; // Accedemos al primer producto
+                        setFormData({
+                            fk_provider: product.fk_provider,
+                            fk_category: product.fk_category,
+                            name: product.product_name, // Cambié `name` para que coincida con el campo de la respuesta
+                            price: product.product_price, // Cambié `price` para que coincida con el campo de la respuesta
+                            stock: product.product_stock, // Cambié `stock` para que coincida con el campo de la respuesta
+                            description: product.product_des, // Cambié `description` para que coincida con el campo de la respuesta
+                            image: product.image // Deberás verificar cómo manejar la imagen
+                        });
+                        console.log("formData actualizado:", product); // Muestra el objeto actualizado
+                    } else {
+                        console.error("Producto no encontrado o datos incorrectos");
+                    }
+                } else {
+                    console.error("Error al obtener los datos del producto", response.statusText);
+                }
+            } catch (error) {
+                console.error("Error fetching product data:", error);
+            }
+        };
+        fetchProduct();
+    }, [pk_product]);
+    
+
     const handleChange = (e) => {
         const { name, value, type } = e.target;
         setFormData({
@@ -99,36 +146,28 @@ const ProductForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const token = localStorage.getItem('token');
-    
-        // Formatear expiration al formato YYYY/MM/DD
-        const formattedExpiration = formData.expiration
-            ? formData.expiration.split("-").join("/") // Convertir YYYY-MM-DD a YYYY/MM/DD
-            : '';
-    
+
         const formDataToSend = new FormData();
         formDataToSend.append('fk_provider', formData.fk_provider);
         formDataToSend.append('fk_category', formData.fk_category);
-        formDataToSend.append('expiration', formattedExpiration); // Enviar la fecha formateada
         formDataToSend.append('name', formData.name);
         formDataToSend.append('price', formData.price);
         formDataToSend.append('stock', formData.stock);
         formDataToSend.append('description', formData.description);
         formDataToSend.append('image', formData.image);
-        for (let pair of formDataToSend.entries()) {
-            console.log(pair[0]+ ': ' + pair[1]);
-        }
+
         try {
-            const response = await fetch('http://localhost:3000/api/products', {
-                method: 'POST',
+            const response = await fetch(`http://localhost:3000/api/products${pk_product ? `/${pk_product}` : ''}`, {
+                method: pk_product ? 'PUT' : 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
                 body: formDataToSend,
             });
             const data = await response.json();
-    
+
             if (response.ok) {
-                setMessage('Producto agregado exitosamente');
+                setMessage(pk_product ? 'Producto actualizado exitosamente' : 'Producto agregado exitosamente');
                 setFormData({
                     fk_provider: '',
                     fk_category: '',
@@ -136,8 +175,7 @@ const ProductForm = () => {
                     price: '',
                     stock: '',
                     description: '',
-                    image: '',
-                    expiration: '', // Limpiar el campo expiration
+                    image: ''
                 });
             } else {
                 setMessage(data.error || 'Error al agregar el producto');
@@ -146,9 +184,6 @@ const ProductForm = () => {
             setMessage('Error en la conexión con el servidor');
         }
     };
-    
-    
-    
 
     return (
         <>
@@ -167,7 +202,7 @@ const ProductForm = () => {
             </Navbar>
 
             <div className="container mt-5">
-                <h2 className="mb-4">Agregar Producto</h2>
+                <h2 className="mb-4">{pk_product ? 'Editar Producto' : 'Agregar Producto'}</h2>
                 {message && <div className="alert alert-info">{message}</div>}
                 <form onSubmit={handleSubmit} className="border p-4 rounded shadow-sm">
                     <div className="mb-3">
@@ -209,17 +244,6 @@ const ProductForm = () => {
                         <input type="text" name="name" className="form-control" value={formData.name} onChange={handleChange} required />
                     </div>
                     <div className="mb-3">
-                        <label className="form-label">Fecha de Expiración</label>
-                        <input
-                            type="DATE"
-                            name="expiration"
-                            className="form-control"
-                            value={formData.expiration}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-                    <div className="mb-3">
                         <label className="form-label">Precio</label>
                         <input type="number" name="price" className="form-control" value={formData.price} onChange={handleChange} required />
                     </div>
@@ -239,10 +263,14 @@ const ProductForm = () => {
                             className="form-control"
                             accept="image/png, image/jpeg, image/jpg"
                             onChange={handleChange}
-                            required
                         />
+                        {formData.image && !formData.image.name && (
+                            <div>
+                                <img src={`http://localhost:3000/images/${formData.image}`} alt="Producto" className="img-thumbnail mt-2" width="100" />
+                            </div>
+                        )}
                     </div>
-                    <button type="submit" className="btn btn-primary">Agregar Producto</button>
+                    <button type="submit" className="btn btn-primary">{pk_product ? 'Actualizar Producto' : 'Agregar Producto'}</button>
                 </form>
             </div>
         </>

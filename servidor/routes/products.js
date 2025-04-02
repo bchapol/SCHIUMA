@@ -6,11 +6,11 @@ const verifyToken = require("../middlewares/verifyToken");
 const uploadPhotos = require("../middlewares/uploadPhotos");
 
 const { 
-    getProducts, 
-    getProductsById, 
-    postProducts, 
-    putProducts, 
-    deleteProducts 
+    getProducts,
+    postProducts,
+    getProductsById,
+    putProducts,
+    deleteProducts
 } = require('../controllers/productsController');
 
 /**
