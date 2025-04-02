@@ -189,7 +189,14 @@ const ProductForm = () => {
                 </div>
                 <div className="mb-3">
                     <label className="form-label">Imagen</label>
-                    <input type="text" name="image" className="form-control" value={formData.image} onChange={handleChange} required />
+                    <input 
+                        type="file" 
+                        name="image" 
+                        className="form-control" 
+                        accept="image/png, image/jpeg, image/jpg"
+                        onChange={handleChange} 
+                        required 
+                    />
                 </div>
                 <button type="submit" className="btn btn-primary">Agregar Producto</button>
             </form>
