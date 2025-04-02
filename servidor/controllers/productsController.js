@@ -55,12 +55,14 @@ console.log("Archivo de imagen:", req.file);
 };
 
 const getProductsById = (req, res) => {
-    const pk_product = req.params.product;
+    const pk_product = req.params.pk_product;
+    console.log("El id es: " + pk_product);
     connection.query('SELECT * FROM view_products WHERE status = 1 AND pk_product = ?', 
         [pk_product],
         (error, results) => {
         if (error) throw error;
         if (results.length === 0) {
+            //console.log("Producto no encontrado");
             return res.status(404).json({ message: "Producto no encontrado" });
         }
 
@@ -74,7 +76,7 @@ const getProductsById = (req, res) => {
             }
             return product;
         });
-
+        console.log("Producto encontrado:", products);
         res.status(200).json(products);
     });
 };
@@ -99,11 +101,10 @@ const putProducts = (req, res) => {
 };
 
 const deleteProducts = (req, res) => {
-    const pk_product = req.params.product;
-    const {status} = req.body;
+    const pk_product = req.params.pk_product;
 
-    connection.query('UPDATE products SET status = ? WHERE pk_product = ?', 
-        [status, pk_product], 
+    connection.query('UPDATE products SET status = 0 WHERE pk_product = ?', 
+        [ pk_product], 
         (error, results) => {
         if (error) {
             res.status(500).json({ error: error.message });

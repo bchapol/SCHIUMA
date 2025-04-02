@@ -37,10 +37,38 @@ const Products = () => {
     navigate('/add-product');
   };
 
-  const handleEditProduct = (productId) => {
+  const handleEditProduct = async (pk_product) => {
     // Redirigir a /addproduct con el ID como parte de la URL
-    navigate(`/edit-product/${productId}`);
+    alert(`Editar alumno con ID: ${pk_product}`);
+    navigate(`/edit-product/${pk_product}`);
 };
+
+  const DeleteProduct = async (pk_product) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("No estás autenticado.");
+      return;
+    }
+    // Redirigir a /addproduct con el ID como parte de la URL
+    alert(`Eliminar alumno con ID: ${pk_product}`);
+    try {
+      // Realizamos la actualización del estado del alumno a 0 (inactivo)
+      const response = await fetch(`http://localhost:3000/api/products/${pk_product}`, {
+        method: "DELETE", // Usamos DELETE porque es el endpoint del backend
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Error al eliminar el alumno");
+
+      alert("Alumno eliminado correctamente");
+    } catch (error) {
+      console.error("Error al eliminar el alumno:", error);
+      alert("Hubo un error al intentar eliminar el alumno.");
+    }
+  };
 
   return (
     <>
@@ -94,7 +122,7 @@ const Products = () => {
                                 <td>{product.status ? "Activo" : "Inactivo"}</td>
                                 <td>
                                   <button className="btn btn-warning btn-sm me-2 m-2" onClick={() => handleEditProduct(product.pk_product)}>Editar</button>
-                                  <button className="btn btn-danger btn-sm m-2">Eliminar</button>
+                                  <button className="btn btn-danger btn-sm m-2" onClick={() => DeleteProduct(product.pk_product)}>Eliminar</button>
                                 </td>
                             </tr>
                         ))

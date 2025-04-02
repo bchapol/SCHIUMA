@@ -189,7 +189,7 @@ const userEmployees = (request, response) => {
             const token = jwt.sign(
                 { id: user.pk_user, email: user.email },
                 process.env.JWT_SECRET,
-                { expiresIn: "1h" }
+                { expiresIn: "2h" }
             );
             return response.status(200).json({
                 success: true,
@@ -197,6 +197,7 @@ const userEmployees = (request, response) => {
                 user: user,
                 token: token
             });
+            console.log(token);
         } else {
             return response.status(401).json({ success: false, message: "Credenciales incorrectas" });
         }

@@ -92,6 +92,8 @@ const ProductForm = () => {
     // Obtener datos del producto para editar
     useEffect(() => {
         if (!pk_product) return;
+        console.log("ID del producto:", pk_product);
+        console.log("Valor del precio en formData:", formData.price);
     
         const fetchProduct = async () => {
             const token = localStorage.getItem('token');
@@ -102,13 +104,16 @@ const ProductForm = () => {
     
             try {
                 const response = await fetch(`http://localhost:3000/api/products/${pk_product}`, {
+                    method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
                 });
     
                 if (response.ok) {
                     const data = await response.json();
+                    console.log("Producto obtenido:", data);
                     if (Array.isArray(data) && data.length > 0) {
                         const product = data[0]; // Accedemos al primer producto
                         setFormData({
@@ -137,11 +142,16 @@ const ProductForm = () => {
 
     const handleChange = (e) => {
         const { name, value, type } = e.target;
+    
+        // Si el tipo es number, convertimos el valor a un número, o 0 si está vacío.
+        const newValue = type === 'number' ? (value ? parseFloat(value) : 0) : value;
+    
         setFormData({
             ...formData,
-            [name]: type === "file" ? e.target.files[0] : value
+            [name]: type === "file" ? e.target.files[0] : newValue
         });
     };
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -245,7 +255,16 @@ const ProductForm = () => {
                     </div>
                     <div className="mb-3">
                         <label className="form-label">Precio</label>
-                        <input type="number" name="price" className="form-control" value={formData.price} onChange={handleChange} required />
+                        <input
+                            type="number"
+                            name="price"
+                            className="form-control"
+                            value={formData.price || ''}  // Si formData.price es undefined, muestra una cadena vacía
+                            onChange={handleChange}
+                            required
+                            step="0.01"  // Permite decimales
+                        />
+
                     </div>
                     <div className="mb-3">
                         <label className="form-label">Stock</label>

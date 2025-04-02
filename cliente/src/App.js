@@ -15,9 +15,9 @@ function App() {
         <Route path="/" element={<Login />} /> {/* Cambiar para usar 'element={<Login />}' en lugar de 'element={Login}' */}
         <Route path="/employees" element={<Employees/>} />
         <Route path="/comprobacion" element={<Comprobacion_token />} />
-        <Route path="/addproduct" element={<Addproduct />} />
+        <Route path="/add-product" element={<Addproduct />} />
         <Route path="/products" element={<Products />} />
-        <Route path="/edit-product/:id" element={<Editproduct />} />
+        <Route path="/edit-product/:pk_product" element={<Editproduct />} />
       </Routes>
     </Router>
   );

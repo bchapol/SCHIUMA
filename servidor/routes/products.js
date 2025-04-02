@@ -97,7 +97,7 @@ router.post('/api/products', verifyToken, uploadPhotos.single('image'), postProd
  *       401:
  *         description: No autorizado
  */
-router.get('/api/products/:product', verifyToken, getProductsById);
+router.get('/api/products/:pk_product', verifyToken, getProductsById);
 
 /**
  * @swagger
@@ -174,6 +174,6 @@ router.put('/api/products/:product', verifyToken, putProducts);
  *       500:
  *         description: Error en la transacción
  */
-router.delete('/api/products/:product', verifyToken, deleteProducts);
+router.delete('/api/products/:pk_product', verifyToken, deleteProducts);
 
 module.exports = router;
