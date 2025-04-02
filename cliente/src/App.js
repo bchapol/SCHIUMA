@@ -6,7 +6,6 @@ import Employees from "./components/employees";
 import Products from "./components/products";
 import Comprobacion_token from "./components/token_";
 import Addproduct from "./components/addproducts";
-import Editproduct from "./components/editproduct";
 
 function App() {
   return (
@@ -15,9 +14,7 @@ function App() {
         <Route path="/" element={<Login />} /> {/* Cambiar para usar 'element={<Login />}' en lugar de 'element={Login}' */}
         <Route path="/employees" element={<Employees/>} />
         <Route path="/comprobacion" element={<Comprobacion_token />} />
-        <Route path="/add-product" element={<Addproduct />} />
-        <Route path="/edit-product/:pk_product" element={<Editproduct />} />
-        <Route path="/products" element={<Products/>} />
+        <Route path="/addproduct" element={<Addproduct />} />
       </Routes>
     </Router>
   );

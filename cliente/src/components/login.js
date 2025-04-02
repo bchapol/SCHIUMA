@@ -27,6 +27,8 @@ const Login = () => {
         const data = await response.json();        
 
         if (response.ok) {
+            console.log("Token:", data.token);  // Muestra el token en consola
+            navigate('/products');  
             setIsAuthenticated(true);
             localStorage.setItem("token", data.token);
             navigate('/products');  
