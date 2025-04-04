@@ -108,8 +108,10 @@ const Products = () => {
                 <tbody>
                     {products.length > 0 ? (
                         products.map(product => (
+                          
                             <tr key={product.pk_product} className="align-middle text-center">
                                 <td>
+                                  {console.log(product.image)}
                                     <img src={`http://localhost:3000/images/${product.image}`} alt={product.name} style={{ width: '100px', height: '100px' }} />
                                 </td>
                                 <td>{product.product_name}</td>

@@ -23,7 +23,7 @@ const getProducts =  (req, res) => {
 
 const postProducts = (req, res) => {
     const {fk_provider, fk_category, expiration, name, price, stock, description} = req.body;
-    const image = req.file ? `products/${req.file.filename}` : null;
+    const image = req.file ? `/${req.file.filename}` : null;
 
     if (!image) {
         return res.status(400).json({ error: "La imagen es obligatoria" });
@@ -84,10 +84,10 @@ const getProductsById = (req, res) => {
 const putProducts = (req, res) => {
     const pk_product = req.params.product;
     const {fk_provider, fk_category, expiration, name, price, stock, description} = req.body;
-    const image = request.file ? `products/${request.file.filename}` : null;
+    const image = req.file ? `products/${req.file.filename}` : null;
 
     if (!image) {
-        return response.status(400).json({ error: "La imagen es obligatoria" });
+        return res.status(400).json({ error: "La imagen es obligatoria" });
     }
     connection.query('UPDATE products SET fk_provider = ?, fk_category = ?, expiration = ?, name = ?, price = ?, stock = ?, description = ?, image = ? WHERE pk_product = ?', 
         [fk_provider, fk_category,expiration, name, price, stock, description, image, pk_product], 

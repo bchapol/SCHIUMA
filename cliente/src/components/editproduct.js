@@ -18,6 +18,7 @@ const ProductForm = () => {
 
     const [providers, setProviders] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [product, setProduct] = useState([]);
     const [message, setMessage] = useState('');
     const [error, setError] = useState(null);
 
@@ -116,12 +117,14 @@ const ProductForm = () => {
                     console.log("Producto obtenido:", data);
                     if (Array.isArray(data) && data.length > 0) {
                         const product = data[0]; // Accedemos al primer producto
+                        console.log(product);
+                        
                         setFormData({
-                            fk_provider: product.fk_provider,
-                            fk_category: product.fk_category,
+                            fk_provider: product.pk_provider,
+                            fk_category: product.pk_category,
                             name: product.product_name, // Cambié `name` para que coincida con el campo de la respuesta
-                            price: product.product_price, // Cambié `price` para que coincida con el campo de la respuesta
-                            stock: product.product_stock, // Cambié `stock` para que coincida con el campo de la respuesta
+                            price: product.price, // Cambié `price` para que coincida con el campo de la respuesta
+                            stock: product.stock, // Cambié `stock` para que coincida con el campo de la respuesta
                             description: product.product_des, // Cambié `description` para que coincida con el campo de la respuesta
                             image: product.image // Deberás verificar cómo manejar la imagen
                         });
@@ -140,16 +143,13 @@ const ProductForm = () => {
     }, [pk_product]);
     
 
-    const handleChange = (e) => {
-        const { name, value, type } = e.target;
-    
-        // Si el tipo es number, convertimos el valor a un número, o 0 si está vacío.
-        const newValue = type === 'number' ? (value ? parseFloat(value) : 0) : value;
-    
-        setFormData({
-            ...formData,
-            [name]: type === "file" ? e.target.files[0] : newValue
-        });
+    const handleChange = (event) => {
+        if (event.target.name === "image") {
+            const file = event.target.files[0];
+            setFormData({ ...formData, image: file });
+        } else {
+            setFormData({ ...formData, [event.target.name]: event.target.value });
+        }
     };
     
 
@@ -220,16 +220,20 @@ const ProductForm = () => {
                         <select
                             name="fk_provider"
                             className="form-control"
-                            value={formData.fk_provider}
                             onChange={handleChange}
                             required
                         >
-                            <option value="">Seleccione un proveedor</option>
                             {providers.map(provider => (
-                                <option key={provider.pk_provider} value={provider.pk_provider}>
-                                    {provider.provider_name}
-                                </option>
-                            ))}
+                        <option 
+                            key={provider.pk_provider} 
+                            value={provider.pk_provider} 
+                            selected={provider.pk_provider === formData.fk_provider}
+                        >
+                            {provider.provider_name}{
+                                console.log(formData)
+                            }
+                        </option>
+                    ))}
                         </select>
                     </div>
                     <div className="mb-3">
@@ -237,17 +241,21 @@ const ProductForm = () => {
                         <select
                             name="fk_category"
                             className="form-control"
-                            value={formData.fk_category}
+                            value={formData.fk_fk_category}
                             onChange={handleChange}
                             required
                         >
-                            <option value="">Seleccione una categoría</option>
-                            {categories.map(category => (
-                                <option key={category.pk_category} value={category.pk_category}>
+                        {categories.map(category => (
+                                <option 
+                                key={category.pk_category} 
+                                value={category.pk_category}
+                                selected={category.pk_category === formData.fk_category}
+                                >
                                     {category.name}
                                 </option>
                             ))}
                         </select>
+                        
                     </div>
                     <div className="mb-3">
                         <label className="form-label">Nombre</label>
@@ -283,9 +291,18 @@ const ProductForm = () => {
                             accept="image/png, image/jpeg, image/jpg"
                             onChange={handleChange}
                         />
-                        {formData.image && !formData.image.name && (
+                        {formData.image && (
                             <div>
-                                <img src={`http://localhost:3000/images/${formData.image}`} alt="Producto" className="img-thumbnail mt-2" width="100" />
+                                <img 
+                                    src={
+                                        typeof formData.image === "string"
+                                            ? `http://localhost:3000/images/${formData.image}`
+                                            : URL.createObjectURL(formData.image) // Vista previa del archivo seleccionado
+                                    } 
+                                    alt="Producto" 
+                                    className="img-thumbnail mt-2" 
+                                    width="100" 
+                                />
                             </div>
                         )}
                     </div>

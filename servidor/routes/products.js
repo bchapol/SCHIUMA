@@ -5,9 +5,11 @@ const router = express.Router();
 const verifyToken = require("../middlewares/verifyToken");
 const uploadPhotos = require("../middlewares/uploadPhotos");
 
+const uploadProductPhotos = uploadPhotos("images/products");
+
 const { 
     getProducts,
-    postProducts,
+    postProducts, 
     getProductsById,
     putProducts,
     deleteProducts
@@ -72,7 +74,7 @@ router.get('/api/products', verifyToken, getProducts);
  *       500:
  *         description: Error en la transacción
  */
-router.post('/api/products', verifyToken, uploadPhotos.single('image'), postProducts);
+router.post('/api/products', verifyToken, uploadProductPhotos.single('image'), postProducts);
 
 /**
  * @swagger
@@ -149,7 +151,7 @@ router.get('/api/products/:pk_product', verifyToken, getProductsById);
  *       500:
  *         description: Error en la transacción
  */
-router.put('/api/products/:product', verifyToken, putProducts);
+router.put('/api/products/:product', verifyToken, uploadProductPhotos.single('image'),  putProducts);
 
 /**
  * @swagger

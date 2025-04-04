@@ -2,7 +2,10 @@ const express = require("express");
 const router = express.Router();
 // Middlewares
 const verifyToken = require("../middlewares/verifyToken");
-const uploadPhotos = require("../middlewares/uploadPhotos")
+
+const uploadPhotos = require("../middlewares/uploadPhotos");
+
+const uploadProductPhotos = uploadPhotos("images/users");
 
 const {
     getEmployees,
@@ -72,7 +75,7 @@ router.get("/api/employees", verifyToken, getEmployees);
  *       500:
  *         description: Error en la transacción o al encriptar la contraseña
  */
-router.post("/api/employees", verifyToken, uploadPhotos.single('image'), postEmployees);
+router.post("/api/employees", verifyToken, uploadProductPhotos.single('image'), postEmployees);
 
 /**
  * @swagger
@@ -142,7 +145,7 @@ router.post("/api/employees", verifyToken, uploadPhotos.single('image'), postEmp
  *       500:
  *         description: Error interno del servidor
  */
-router.put("/api/employees/:pk_employee", verifyToken, uploadPhotos.single('image'), putEmployees);
+router.put("/api/employees/:pk_employee", verifyToken, uploadProductPhotos.single('image'), putEmployees);
 
 /**
  * @swagger
