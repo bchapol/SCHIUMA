@@ -116,7 +116,11 @@ const Products = () => {
                                 </td>
                                 <td>{product.product_name}</td>
                                 <td>{product.product_des}</td>
-                                <td>{product.product_exp}</td>
+                                <td>{
+                                    product.product_exp === "0000-00-00" 
+                                    ? "0000-00-00" 
+                                    : new Date(product.product_exp).toISOString().split('T')[0] // Solo la parte de la fecha
+                                }</td>
                                 <td>{product.category_name}</td>
                                 <td>${product.price}</td>
                                 <td>{product.stock}</td>

@@ -3,9 +3,9 @@ const router = express.Router();
 
 // Middlewares
 const verifyToken = require("../middlewares/verifyToken");
-const uploadPhotos = require("../middlewares/uploadPhotos");
+const upload = require("../middlewares/uploadPhotos");
 
-const uploadProductPhotos = uploadPhotos("images/products");
+const uploadProductPhotos = upload("images/products");
 
 const { 
     getProducts,

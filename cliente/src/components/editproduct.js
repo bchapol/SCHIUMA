@@ -6,165 +6,169 @@ import { useParams, useNavigate } from 'react-router-dom';
 const ProductForm = () => {
     const { pk_product } = useParams(); // Obtiene el ID del producto de la URL
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({
-        fk_provider: '',
-        fk_category: '',
-        name: '',
-        price: '',
-        stock: '',
-        description: '',
-        image: ''
-    });
 
+    const [productCurrenly, setProductCurrenly] = useState({
+        pk_product: '',
+        product_image: '',
+        product_name: '',
+        product_description: '',
+        product_expiration: '',
+        pk_category: '',
+        product_category: '',
+        product_price: '',
+        product_stock: '',
+        pk_provider: '',
+        product_provider: ''
+        });
     const [providers, setProviders] = useState([]);
     const [categories, setCategories] = useState([]);
-    const [product, setProduct] = useState([]);
-    const [message, setMessage] = useState('');
-    const [error, setError] = useState(null);
 
-    // Obtención de proveedores
+    const [message, setMessage] = useState('');
+    const [error, setError] = useState('');
+
     useEffect(() => {
-        const fetchProviders = async () => {
+        const fetchData = async () =>{
             const token = localStorage.getItem("token");
             if (!token) {
                 setError("No estás autenticado.");
                 return;
             }
 
-            try {
-                const response = await fetch('http://localhost:3000/api/providers', {
+            //PROVIDER FETCH
+            try{
+                const providerResponse = await fetch('http://localhost:3000/api/providers', {
                     method: "GET",
                     headers: {
                         "Authorization": `Bearer ${token}`
                     }
                 });
 
-                if (response.ok) {
-                    const data = await response.json();
+                if(providerResponse.ok){
+                    const data = await providerResponse.json();
                     if (Array.isArray(data)) {
                         setProviders(data);
                     } else {
                         console.error("Error: providers no es un array", data);
                     }
-                } else {
-                    console.error("Error en la solicitud de proveedores", response.statusText);
+                }else {
+                    console.error("Error al realizar la solicitud de proveedores", providerResponse.statusText);
                 }
-            } catch (error) {
+            }catch (error) {
                 console.error("Error fetching providers:", error);
             }
-        };
-        fetchProviders();
-    }, []);
 
-    // Obtención de categorías
-    useEffect(() => {
-        const fetchCategories = async () => {
-            const token = localStorage.getItem('token');
-            console.log(token);
-            if (!token) {
-                setError("No estás autenticado.");
-                return;
-            }
+            
+            //CATEGORIES
 
             try {
-                const response = await fetch('http://localhost:3000/api/categories', {
+                const categoryResponse = await fetch('http://localhost:3000/api/categories', {
+                    method: "GET",
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
 
-                if (response.ok) {
-                    const data = await response.json();
+                if (categoryResponse.ok) {
+                    const data = await categoryResponse.json();
                     if (Array.isArray(data)) {
                         setCategories(data);
                     } else {
                         console.error("Error: categories no es un array", data);
                     }
                 } else {
-                    console.error("Error en la solicitud de categorías", response.statusText);
+                    console.error("Error en la solicitud de categorías", categoryResponse.statusText);
                 }
             } catch (error) {
                 console.error("Error fetching categories:", error);
             }
-        };
-        fetchCategories();
-    }, []);
 
-    // Obtener datos del producto para editar
-    useEffect(() => {
-        if (!pk_product) return;
-        console.log("ID del producto:", pk_product);
-        console.log("Valor del precio en formData:", formData.price);
-    
-        const fetchProduct = async () => {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                setError("No estás autenticado.");
-                return;
-            }
-    
-            try {
-                const response = await fetch(`http://localhost:3000/api/products/${pk_product}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-    
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log("Producto obtenido:", data);
-                    if (Array.isArray(data) && data.length > 0) {
-                        const product = data[0]; // Accedemos al primer producto
-                        console.log(product);
-                        
-                        setFormData({
-                            fk_provider: product.pk_provider,
-                            fk_category: product.pk_category,
-                            name: product.product_name, // Cambié `name` para que coincida con el campo de la respuesta
-                            price: product.price, // Cambié `price` para que coincida con el campo de la respuesta
-                            stock: product.stock, // Cambié `stock` para que coincida con el campo de la respuesta
-                            description: product.product_des, // Cambié `description` para que coincida con el campo de la respuesta
-                            image: product.image // Deberás verificar cómo manejar la imagen
-                        });
-                        console.log("formData actualizado:", product); // Muestra el objeto actualizado
+            //PRODUCT BY ID
+            if(pk_product){
+                try {
+                    const productProduct = await fetch(`http://localhost:3000/api/products/${pk_product}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+        
+                    if (productProduct.ok) {
+                        const data = await productProduct.json();
+                        if (Array.isArray(data) && data.length > 0) {
+                            const product = data[0];
+                            setProductCurrenly({
+                                pk_product: product.pk_product,
+                                product_image: product.image,
+                                product_name: product.product_name,
+                                product_description: product.product_des,
+                                product_expiration: product.product_exp,
+                                pk_category: product.pk_category,
+                                product_category: product.category_name,
+                                product_price: product.price,
+                                product_stock: product.stock,
+                                pk_provider: product.pk_provider,
+                                product_provider: product.provider_name
+                            });
+                        } else {
+                            console.error("Producto no encontrado o datos incorrectos");
+                        }
                     } else {
-                        console.error("Producto no encontrado o datos incorrectos");
+                        console.error("Error al obtener los datos del producto", productProduct.statusText);
                     }
-                } else {
-                    console.error("Error al obtener los datos del producto", response.statusText);
+                } catch (error) {
+                    console.error("Error fetching product data:", error);
                 }
-            } catch (error) {
-                console.error("Error fetching product data:", error);
+            }else{
+                console.error("No se encuentra el ID");
             }
-        };
-        fetchProduct();
+        }
+        fetchData();
     }, [pk_product]);
-    
 
-    const handleChange = (event) => {
-        if (event.target.name === "image") {
-            const file = event.target.files[0];
-            setFormData({ ...formData, image: file });
+    const handleChange = (e) => {
+        const { name, value, files } = e.target;
+        
+        if (name === 'image') {
+            setProductCurrenly((prev) => ({
+                ...prev,
+                product_image: files[0] // El nuevo archivo
+            }));
+        } else if (name === 'expiration') {
+            setProductCurrenly((prev) => ({
+                ...prev,
+                product_expiration: value // Actualiza la fecha de expiración
+            }));
         } else {
-            setFormData({ ...formData, [event.target.name]: event.target.value });
+            setProductCurrenly((prev) => ({
+                ...prev,
+                [name]: value
+            }));
         }
     };
     
+    
+    
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const token = localStorage.getItem('token');
-
+   const handleSubmit = async (e) => {
+    e.preventDefault();
+        const token = localStorage.getItem("token");
+        if (!token) {
+            setError("No estás autenticado.");
+            return;
+        }
         const formDataToSend = new FormData();
-        formDataToSend.append('fk_provider', formData.fk_provider);
-        formDataToSend.append('fk_category', formData.fk_category);
-        formDataToSend.append('name', formData.name);
-        formDataToSend.append('price', formData.price);
-        formDataToSend.append('stock', formData.stock);
-        formDataToSend.append('description', formData.description);
-        formDataToSend.append('image', formData.image);
+        formDataToSend.append('fk_provider', productCurrenly.pk_provider);
+        formDataToSend.append('fk_category', productCurrenly.pk_category);
+        formDataToSend.append('name', productCurrenly.product_name);
+        formDataToSend.append('expiration', productCurrenly.product_expiration);
+        formDataToSend.append('price', productCurrenly.product_price);
+        formDataToSend.append('stock', productCurrenly.product_stock);
+        formDataToSend.append('description', productCurrenly.product_description);
+        if (productCurrenly.product_image instanceof File) {
+            formDataToSend.append('image', productCurrenly.product_image);
+        }
+        
 
         try {
             const response = await fetch(`http://localhost:3000/api/products${pk_product ? `/${pk_product}` : ''}`, {
@@ -177,15 +181,19 @@ const ProductForm = () => {
             const data = await response.json();
 
             if (response.ok) {
-                setMessage(pk_product ? 'Producto actualizado exitosamente' : 'Producto agregado exitosamente');
-                setFormData({
-                    fk_provider: '',
-                    fk_category: '',
-                    name: '',
-                    price: '',
-                    stock: '',
-                    description: '',
-                    image: ''
+                setMessage('Producto actualizado exitosamente');
+                setProductCurrenly({
+                    pk_product: '',
+                    product_image: '',
+                    product_name: '',
+                    product_description: '',
+                    product_expiration: '',
+                    pk_category: '',
+                    product_category: '',
+                    product_price: '',
+                    product_stock: '',
+                    pk_provider: '',
+                    product_provider: ''
                 });
             } else {
                 setMessage(data.error || 'Error al agregar el producto');
@@ -212,76 +220,12 @@ const ProductForm = () => {
             </Navbar>
 
             <div className="container mt-5">
-                <h2 className="mb-4">{pk_product ? 'Editar Producto' : 'Agregar Producto'}</h2>
-                {message && <div className="alert alert-info">{message}</div>}
-                <form onSubmit={handleSubmit} className="border p-4 rounded shadow-sm">
-                    <div className="mb-3">
-                        <label className="form-label">Proveedor</label>
-                        <select
-                            name="fk_provider"
-                            className="form-control"
-                            onChange={handleChange}
-                            required
-                        >
-                            {providers.map(provider => (
-                        <option 
-                            key={provider.pk_provider} 
-                            value={provider.pk_provider} 
-                            selected={provider.pk_provider === formData.fk_provider}
-                        >
-                            {provider.provider_name}{
-                                console.log(formData)
-                            }
-                        </option>
-                    ))}
-                        </select>
-                    </div>
-                    <div className="mb-3">
-                        <label className="form-label">Categoría</label>
-                        <select
-                            name="fk_category"
-                            className="form-control"
-                            value={formData.fk_fk_category}
-                            onChange={handleChange}
-                            required
-                        >
-                        {categories.map(category => (
-                                <option 
-                                key={category.pk_category} 
-                                value={category.pk_category}
-                                selected={category.pk_category === formData.fk_category}
-                                >
-                                    {category.name}
-                                </option>
-                            ))}
-                        </select>
-                        
-                    </div>
-                    <div className="mb-3">
-                        <label className="form-label">Nombre</label>
-                        <input type="text" name="name" className="form-control" value={formData.name} onChange={handleChange} required />
-                    </div>
-                    <div className="mb-3">
-                        <label className="form-label">Precio</label>
-                        <input
-                            type="number"
-                            name="price"
-                            className="form-control"
-                            value={formData.price || ''}  // Si formData.price es undefined, muestra una cadena vacía
-                            onChange={handleChange}
-                            required
-                            step="0.01"  // Permite decimales
-                        />
 
-                    </div>
-                    <div className="mb-3">
-                        <label className="form-label">Stock</label>
-                        <input type="number" name="stock" className="form-control" value={formData.stock} onChange={handleChange} required />
-                    </div>
-                    <div className="mb-3">
-                        <label className="form-label">Descripción</label>
-                        <textarea name="description" className="form-control" value={formData.description} onChange={handleChange} required></textarea>
-                    </div>
+                <h2 className="mb-4"> Editar producto </h2>
+
+                {message && <div className="alert alert-info">{message}</div>}
+                <form  onSubmit={handleSubmit}  className="border p-4 rounded shadow-sm">
+
                     <div className="mb-3">
                         <label className="form-label">Imagen</label>
                         <input
@@ -291,13 +235,13 @@ const ProductForm = () => {
                             accept="image/png, image/jpeg, image/jpg"
                             onChange={handleChange}
                         />
-                        {formData.image && (
+                        {productCurrenly.product_image && (
                             <div>
                                 <img 
                                     src={
-                                        typeof formData.image === "string"
-                                            ? `http://localhost:3000/images/${formData.image}`
-                                            : URL.createObjectURL(formData.image) // Vista previa del archivo seleccionado
+                                        typeof productCurrenly.product_image === "string"
+                                            ? `http://localhost:3000/images/${productCurrenly.product_image}`
+                                            : URL.createObjectURL(productCurrenly.product_image) // Vista previa del archivo seleccionado
                                     } 
                                     alt="Producto" 
                                     className="img-thumbnail mt-2" 
@@ -306,6 +250,99 @@ const ProductForm = () => {
                             </div>
                         )}
                     </div>
+
+                    <div className="mb-3">
+                        <label className="form-label">Nombre</label>
+                        <input type="text" name="name" className="form-control" value={productCurrenly.product_name} onChange={handleChange} required />
+                    </div>
+
+                    <div className="mb-3">
+                        <label className="form-label">Descripción</label>
+                        <textarea name="description" className="form-control" value={productCurrenly.product_description} onChange={handleChange} required></textarea>
+                    </div>
+
+                    <div className="mb-3">
+                        <label className="form-label">Fecha de Expiración</label>
+                        <input
+                            type="date"
+                            name="expiration"
+                            className="form-control"
+                            value={
+                                productCurrenly.product_expiration && !isNaN(new Date(productCurrenly.product_expiration)) // Verificar si la fecha es válida
+                                    ? new Date(productCurrenly.product_expiration).toISOString().split('T')[0] // Convertir a formato adecuado si es válida
+                                    : "" // Si es null o inválido, dejar el campo vacío
+                            }
+                            onChange={handleChange}
+                        />
+                    </div>
+                    
+                    <div className="mb-3">
+                        <label className="form-label">Categoría</label>
+                        <select
+                            name="fk_category"
+                            className="form-control"
+                            value={productCurrenly.pk_category}
+                            onChange={handleChange}
+                            required
+                        >
+                        {categories.map(category => (
+                                <option 
+                                key={category.pk_category} 
+                                value={category.pk_category}
+                                defaultValue={category.pk_category === productCurrenly.pk_category}
+                                >
+                                    {category.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="mb-3">
+                        <label className="form-label">Precio</label>
+                        <input
+                            type="number"
+                            name="price"
+                            className="form-control"
+                            value={productCurrenly.product_price}  // Si formData.price es undefined, muestra una cadena vacía
+                            onChange={handleChange}
+                            required
+                            step="0.01"  // Permite decimales
+                        />
+                    </div>
+
+                    <div className="mb-3">
+                        <label className="form-label">Stock</label>
+                        <input 
+                        type="number"
+                        name="stock" 
+                        className="form-control" 
+                        value={productCurrenly.product_stock} 
+                        onChange={handleChange} 
+                        required
+                        />
+                    </div>
+
+                    <div className="mb-3">
+                        <label className="form-label">Proveedor</label>
+                        <select
+                        name="fk_provider"
+                        className="form-control"
+                        value={productCurrenly.pk_provider}
+                        onChange={handleChange}
+                        required
+                        >
+                            {providers.map(provider => (
+                        <option 
+                            key={provider.pk_provider} 
+                            value={provider.pk_provider} 
+                            defaultValue={provider.pk_provider === productCurrenly.pk_provider}
+                        >
+                            {provider.provider_name}
+                        </option>
+                    ))}
+                        </select>
+                    </div>
+                    
                     <button type="submit" className="btn btn-primary">{pk_product ? 'Actualizar Producto' : 'Agregar Producto'}</button>
                 </form>
             </div>
