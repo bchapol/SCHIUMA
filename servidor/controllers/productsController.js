@@ -34,7 +34,7 @@ const postProducts = (req, res) => {
         }
 
         const existingProduct = results[0]; // Producto encontrado
-        const image = req.file ? `/${req.file.filename}` : existingProduct.image; // Si no se sube nueva imagen, usamos la actual
+        const image = req.file ? `products/${req.file.filename}` : existingProduct.image; // Si no se sube nueva imagen, usamos la actual
 
         if (!image) {
             return res.status(400).json({ error: "La imagen es obligatoria" });
@@ -66,16 +66,14 @@ const postProducts = (req, res) => {
 
 const getProductsById = (req, res) => {
     const pk_product = req.params.pk_product;
-    console.log("El id es: " + pk_product);
     connection.query('SELECT * FROM view_products WHERE status = 1 AND pk_product = ?', 
         [pk_product],
         (error, results) => {
         if (error) throw error;
         if (results.length === 0) {
-            //console.log("Producto no encontrado");
             return res.status(404).json({ message: "Producto no encontrado" });
         }
-
+        
         const products = results.map((product) => {
             if (product.image) {
                 try {
@@ -86,7 +84,6 @@ const getProductsById = (req, res) => {
             }
             return product;
         });
-        console.log("Producto encontrado:", products);
         res.status(200).json(products);
     });
 };
@@ -106,7 +103,7 @@ const putProducts = (req, res) => {
         }
 
         const existingProduct = results[0]; // Producto encontrado
-        const image = req.file ? `/${req.file.filename}` : existingProduct.image; // Si no se sube nueva imagen, usamos la actual
+        const image = req.file ? `products/${req.file.filename}` : existingProduct.image; // Si no se sube nueva imagen, usamos la actual
 
         if (!image) {
             return res.status(400).json({ error: "La imagen es obligatoria" });
