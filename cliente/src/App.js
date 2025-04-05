@@ -8,6 +8,8 @@ import Comprobacion_token from "./components/token_";
 import Addproduct from "./components/addproducts";
 import Editproduct from "./components/editproduct";
 
+import Products_ from "./components/products_";
+
 function App() {
   return (
     <Router>
@@ -18,6 +20,8 @@ function App() {
         <Route path="/add-product" element={<Addproduct />} />
         <Route path="/products" element={<Products />} />
         <Route path="/edit-product/:pk_product" element={<Editproduct />} />
+
+        <Route path="/products-table" element={<Products_ />} />
       </Routes>
     </Router>
   );
