@@ -12,6 +12,7 @@ const {
     postProducts, 
     getProductsById,
     putProducts,
+    putProductsAddStock,
     deleteProducts
 } = require('../controllers/productsController');
 
@@ -29,7 +30,8 @@ const {
  *       401:
  *         description: No autorizado
  */
-router.get('/api/products', verifyToken, getProducts);
+router.get('/api/products/:filter?', verifyToken, getProducts);
+
 
 /**
  * @swagger
@@ -152,6 +154,8 @@ router.get('/api/products/:pk_product', verifyToken, getProductsById);
  *         description: Error en la transacción
  */
 router.put('/api/products/:product', verifyToken, uploadProductPhotos.single('image'),  putProducts);
+
+router.put('/api/products/add-stock/:pk_product', verifyToken,  putProductsAddStock);
 
 /**
  * @swagger

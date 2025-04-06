@@ -2,21 +2,34 @@ const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken"); 
 const {connection} = require("../config/config.db");
 
-const getProducts =  (req, res) => {
-    connection.query('SELECT * FROM view_products WHERE status = 1', (error, results) => {
+const getProducts = (req, res) => {
+    const filter = req.params.filter || 'all'; // Si no se pasa un filtro, se usa 'all'
+    let query = 'SELECT * FROM view_products WHERE status = 1 ';
+
+    if (filter === 'best-sellers') {
+        query += 'ORDER BY total_sold DESC LIMIT 5';
+    } else if (filter === 'low-sale') {
+        query += 'ORDER BY total_sold ASC LIMIT 5';
+    } else if (filter === 'new-products') {
+        query += ' ORDER BY `create` DESC LIMIT 5';
+    } else if (filter === 'low-stock') {
+        query += 'AND stock < 20 LIMIT 5';
+    } else if (filter === 'high-stock') {
+        query += 'AND stock > 150 LIMIT 5';
+    }
+
+    connection.query(query, (error, results) => {
         if (error) throw error;
-
         const products = results.map((product) => {
-            if (product.image) {
-                try {
-                    product.image = product.image.toString('base64');
-                } catch (err) {
-                    console.error("Error al convertir imagen:", err);
-                }
+        if (product.image) {
+            try {
+            product.image = product.image.toString('base64');
+            } catch (err) {
+            console.error("Error al convertir imagen:", err);
             }
-            return product;
+        }
+        return product;
         });
-
         res.status(200).json(products);
     });
 };
@@ -121,6 +134,32 @@ const putProducts = (req, res) => {
     });
 };
 
+const putProductsAddStock = (req, res) => {
+    const pk_product = req.params.pk_product;
+    const addStock = parseInt(req.body.addStock, 10);
+  
+    if (!addStock || isNaN(addStock) || addStock <= 0) {
+      return res.status(400).json({ message: "Cantidad inválida para agregar." });
+    }
+  
+    connection.query(
+      'UPDATE products SET stock = stock + ? WHERE pk_product = ?',
+      [addStock, pk_product],
+      (err, results) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+  
+        if (results.affectedRows === 0) {
+          return res.status(404).json({ error: "Producto no encontrado" });
+        }
+  
+        return res.status(200).json({ message: "Stock actualizado correctamente" });
+      }
+    );
+  };
+  
+
 const deleteProducts = (req, res) => {
     const pk_product = req.params.pk_product;
 
@@ -140,5 +179,6 @@ module.exports = {
     postProducts,
     getProductsById,
     putProducts,
+    putProductsAddStock,
     deleteProducts
 };
