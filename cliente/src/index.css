@@ -1,6 +1,9 @@
 body {
   background-color: #f8f9fa;
 }
+.modal-backdrop {
+  display: none;
+}
 
 .login-container {
   max-width: 400px;
