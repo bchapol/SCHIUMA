@@ -28,10 +28,10 @@ const Login = () => {
 
         if (response.ok) {
             console.log("Token:", data.token);  // Muestra el token en consola
-            navigate('/products-table');  
+            navigate('/salidas');  
             setIsAuthenticated(true);
             localStorage.setItem("token", data.token);
-            navigate('/products-table');  
+            navigate('/salidas');  
         } else {
             setError(data.message);
         }

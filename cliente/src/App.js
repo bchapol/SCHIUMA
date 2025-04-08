@@ -9,6 +9,7 @@ import Addproduct from "./components/addproducts";
 import Editproduct from "./components/editproduct";
 
 import Products_ from "./components/products_";
+import Salidas from "./components/salidas";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/edit-product/:pk_product" element={<Editproduct />} />
 
         <Route path="/products-table" element={<Products_ />} />
+        <Route path="/salidas" element={<Salidas />} />
       </Routes>
     </Router>
   );
