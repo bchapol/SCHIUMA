@@ -1,33 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { connection } = require('../config/config.db'); // Asegúrate de que la ruta es correcta
-const jwt = require("jsonwebtoken");
-const dotenv = require("dotenv");
-dotenv.config();
 
-// Middleware para verificar el token
-const verifyToken = (req, res, next) => {
-    let token = req.headers["authorization"]; // Obtener el token del header
-    
-    if (!token) {
-        return res.status(403).json({ message: "Token requerido" });
-    }
+// Middlewares
+const verifyToken = require("../middlewares/verifyToken");
 
-    // Asegurar que el token tiene el formato correcto "Bearer TOKEN_AQUI"
-    if (token.startsWith("Bearer ")) {
-        token = token.slice(7, token.length); // Remover "Bearer " para obtener solo el token
-    }
+const {
+    x
+} = require('../controllers/salesController');
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ message: "Token inválido o expirado" });
-        }
-        req.user = decoded; // Guardar datos del usuario en la request
-        next(); // Continuar con la siguiente función
-    });
-};
-
-// Obtener todas las ventas
 router.get('/api/sales', verifyToken, (req, res) => {
     if (!connection) {
         return res.status(500).json({ error: 'Could not establish a connection to the database.' });

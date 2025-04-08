@@ -7,6 +7,7 @@ import Products from "./components/products";
 import Comprobacion_token from "./components/token_";
 import Addproduct from "./components/addproducts";
 import Editproduct from "./components/editproduct";
+import Sales from "./components/sales";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/products" element={<Products />} />
         <Route path="/products/:filter" element={<Products />} />
         <Route path="/edit-product/:pk_product" element={<Editproduct />} />
+        <Route path="/sales" element={<Sales />} />
       </Routes>
     </Router>
   );
