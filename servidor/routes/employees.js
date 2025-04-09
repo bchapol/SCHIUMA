@@ -13,6 +13,7 @@ const {
     putEmployees,
     deleteEmployees,
     userEmployees,
+    getPKEmployee,
 } = require("../controllers/employeesController");
 
 /**
@@ -195,5 +196,7 @@ router.delete("/api/employees/:pk_employee", verifyToken, deleteEmployees);
  *         description: Credenciales incorrectas
  */
 router.post("/api/user_employees", userEmployees);
+
+router.get("/api/userdata",  verifyToken, getPKEmployee);
 
 module.exports = router;

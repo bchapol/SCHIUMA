@@ -187,7 +187,7 @@ const userEmployees = (request, response) => {
         if (results.length > 0) {
             const user = results[0];
             const token = jwt.sign(
-                { id: user.pk_user, email: user.email },
+                { pk_employee: user.pk_user, email: user.email },
                 process.env.JWT_SECRET,
                 { expiresIn: "2h" }
             );
@@ -204,6 +204,12 @@ const userEmployees = (request, response) => {
     });
 };
 
+const getPKEmployee = (req, res) => {
+    const userId = req.user.pk_employee;
+    res.json({ pk_employee: userId });
+};
+  
+
 const getEmployeesById = (request, response) => {
     response.send("El web socket se ha conectado");
 };
@@ -215,4 +221,5 @@ module.exports = {
     putEmployees,
     deleteEmployees,
     userEmployees,
+    getPKEmployee
 };

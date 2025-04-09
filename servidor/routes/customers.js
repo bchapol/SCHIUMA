@@ -8,13 +8,9 @@ const upload = require("../middlewares/uploadPhotos");
 const uploadProductPhotos = upload("images/customers");
 
 const { 
-    getProducts,
-    postProducts, 
-    getProductsById,
-    putProducts,
-    putProductsAddStock,
-    deleteProducts
+    getCustomers
 } = require('../controllers/customersController');
 
+router.get('/api/customers', verifyToken, getCustomers);
 
 module.exports = router;

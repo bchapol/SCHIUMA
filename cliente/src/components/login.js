@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";  // Importamos useNavigate
 
 const Login = () => {
@@ -11,32 +12,37 @@ const Login = () => {
   const user_employees = async (e) => {
     e.preventDefault();
     setError("");
-
+  
     try {
-        const response = await fetch("http://localhost:3000/api/user_employees", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-        });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Error ${response.status}: ${errorText}`);
-        }
-        
-        const data = await response.json();        
-
-        if (response.ok) {
-            console.log("Token:", data.token);  // Muestra el token en consola
-            navigate('/products');  
-            setIsAuthenticated(true);
-            localStorage.setItem("token", data.token);
-            navigate('/products');  
-        } else {
-            setError(data.message);
-        }
-    }catch (err) {
-        setError("Error al conectar con el servidor"+ err);
+      const response = await fetch("http://localhost:3000/api/user_employees", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error ${response.status}: ${errorText}`);
+      }
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        const token = data.token;
+        localStorage.setItem("token", token);
+        setIsAuthenticated(true);
+  
+        // 👇👇 Decodificamos el token aquí mismo
+        const decoded = jwtDecode(token);
+        console.log("Token decodificado:", decoded); // <-- Aquí debes ver pk_employee
+  
+        // Luego navegas
+        navigate("/products");
+      } else {
+        setError(data.message);
+      }
+    } catch (err) {
+      setError("Error al conectar con el servidor: " + err);
     }
   };
 

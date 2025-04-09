@@ -20,6 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(require('./routes/roles'));
 app.use(require('./routes/users'));
+app.use(require('./routes/customers'));
 app.use(require('./routes/providers'));
 app.use(require('./routes/products'));
 app.use(require('./routes/categories'));
