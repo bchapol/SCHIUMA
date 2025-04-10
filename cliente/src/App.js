@@ -2,11 +2,11 @@ import React from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom"; // Importamos Routes en lugar de Switch
 
-import Login from "./components/login";
+import Login from "./components/login_";
 
 import Products from "./components/products";
-import Addproduct from "./components/addproduct";
-import Editproduct from "./components/editproducts";
+import Addproduct from "./components/addproducts";
+import Editproduct from "./components/editproduct";
 
 import Employees from "./components/employees";
 import Addemployee from "./components/addemployee";
@@ -14,10 +14,6 @@ import Addemployee from "./components/addemployee";
 import Customers from "./components/customers";
 import Addcustomer from "./components/addcustomer";
 
-import Products from "./components/products";
-import Comprobacion_token from "./components/token_";
-import Addproduct from "./components/addproducts";
-import Editproduct from "./components/editproduct";
 import Sales from "./components/sales";
 import Movements from "./components/movements";
 

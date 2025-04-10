@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate} from "react-router-dom";  // Importamos useNavigate
 import "bootstrap/dist/css/bootstrap.min.css";
+import logo from '../logo.svg';
+
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -27,17 +29,13 @@ const LoginPage = () => {
       }
   
       const data = await response.json();
-  
       if (response.ok) {
         const token = data.token;
         localStorage.setItem("token", token);
         setIsAuthenticated(true);
   
-        // 👇👇 Decodificamos el token aquí mismo
         const decoded = jwtDecode(token);
-        console.log("Token decodificado:", decoded); // <-- Aquí debes ver pk_employee
-  
-        // Luego navegas
+        console.log("Token decodificado:", decoded); 
         navigate("/products");
       } else {
         setError(data.message);
@@ -52,7 +50,7 @@ const LoginPage = () => {
       {/* Lado Izquierdo - Login */}
       <div className="col-md-6 d-flex flex-column align-items-center justify-content-center bg-white p-5">
         <img
-          src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Lotus_flower.svg/1200px-Lotus_flower.svg.png"
+          src={logo}
           alt="Lotus Logo"
           style={{ width: "100px", marginBottom: "20px" }}
         />
@@ -99,14 +97,10 @@ const LoginPage = () => {
         }}
       >
         <div className="p-5">
-          <h2 className="mb-4 fw-bold">We are more than just a company</h2>
+          <h2 className="mb-4 fw-bold"></h2>
           <p>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
           </p>
           <p>
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-            nisi ut aliquip ex ea commodo consequat.
           </p>
         </div>
       </div>
