@@ -25,6 +25,7 @@ app.use(require('./routes/sales'));
 app.use(require('./routes/providers'));
 app.use(require('./routes/products'));
 app.use(require('./routes/categories'));
+app.use(require('./routes/movements'));
 app.use(require('./routes/employees'));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 

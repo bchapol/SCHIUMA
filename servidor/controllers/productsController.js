@@ -35,47 +35,40 @@ const getProducts = (req, res) => {
 };
 
 const postProducts = (req, res) => {
-    const {fk_provider, fk_category, expiration, name, price, stock, description} = req.body;
+    const { fk_provider, fk_category, expiration, name, price, stock, description } = req.body;
     
-    connection.query('SELECT image FROM products WHERE pk_product = ?', [pk_product], (err, results) => {
-        if (err) {
-            return res.status(500).json({ error: err.message });
+    // Verifica si hay una imagen en el request
+    const image = req.file ? `products/${req.file.filename}` : null;
+    if (!image) {
+        return res.status(400).json({ error: "La imagen es obligatoria" });
+    }
+
+    // Validar el formato de la fecha y convertirla a YYYY/MM/DD si es necesario
+    const formattedExpiration = expiration ? expiration.split("/").join("-") : null;
+
+    // Validación del formato de fecha de expiración (YYYY-MM-DD)
+    if (formattedExpiration && isNaN(new Date(formattedExpiration).getTime())) {
+        return res.status(400).json({ error: "El formato de la fecha de expiración es incorrecto. Debe ser YYYY/MM/DD." });
+    }
+
+    // Inserción de un nuevo producto
+    connection.query(
+        'INSERT INTO products (fk_provider, fk_category, expiration, name, price, stock, description, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [fk_provider, fk_category, formattedExpiration, name, price, stock, description, image],
+        (error, results) => {
+            if (error) {
+                console.error("Error en la consulta:", error);
+                return res.status(500).json({ error: error.message });
+            }
+
+            console.log("Datos del body:", req.body);
+            console.log("Archivo de imagen:", req.file);
+
+            res.status(200).json({ "New product added": results.affectedRows });
         }
-
-        if (results.length === 0) {
-            return res.status(404).json({ error: "Producto no encontrado" });
-        }
-
-        const existingProduct = results[0]; // Producto encontrado
-        const image = req.file ? `products/${req.file.filename}` : existingProduct.image; // Si no se sube nueva imagen, usamos la actual
-
-        if (!image) {
-            return res.status(400).json({ error: "La imagen es obligatoria" });
-        }
-        // Validar el formato de la fecha y convertirlo a YYYY/MM/DD si es necesario
-        const formattedExpiration = expiration ? expiration.split("/").join("-") : null;
-
-        // Validación del formato de fecha de expiración (YYYY-MM-DD)
-        if (formattedExpiration && isNaN(new Date(formattedExpiration).getTime())) {
-            return res.status(400).json({ error: "El formato de la fecha de expiración es incorrecto. Debe ser YYYY/MM/DD." });
-        }
-
-        connection.query(
-            'INSERT INTO products (fk_provider, fk_category, expiration, name, price, stock, description, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [fk_provider, fk_category, formattedExpiration, name, price, stock, description, image],
-            (error, results) => {
-                if (error) {
-                    console.error("Error en la consulta:", error);
-                    return res.status(500).json({ error: error.message });
-                }
-                console.log("Datos del body:", req.body);
-        console.log("Archivo de imagen:", req.file);
-
-                res.status(200).json({ "New product added": results.affectedRows });
-        })
-    });
-    
+    );
 };
+
 
 const getProductsById = (req, res) => {
     const pk_product = req.params.pk_product;
