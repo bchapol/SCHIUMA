@@ -1,22 +1,28 @@
 const express = require('express');
 const router = express.Router();
-const { connection } = require('../config/config.db'); // Asegúrate de que la ruta es correcta
 
 // Middlewares
 const verifyToken = require("../middlewares/verifyToken");
 const uploadPhotos = require("../middlewares/uploadPhotos");
 
+const uploadProductPhotos = uploadPhotos("images/users");
 
-router.get('/api/providers', verifyToken, (req, res) => {
-    connection.query('SELECT * FROM view_providers WHERE status = 1', (error, results) => {
-        if (error) {
-            res.status(500).json({ error: error.message });
-            return;
-        }
-        res.status(200).json(results);
-    });
-});
+const {
+    getProviders,
+    getProvidersById,
+    postProviders,
+    putProviders
+} = require("../controllers/providersController");
 
+router.get('/api/providers', verifyToken, getProviders)
+
+router.post("/api/providers", verifyToken, uploadProductPhotos.single('image'), postProviders);
+
+router.get("/api/providers/:pk_provider", verifyToken, getProvidersById);
+
+router.put("/api/providers/:pk_provider", verifyToken, uploadProductPhotos.single('image'), putProviders);
+
+/*
 router.get('/api/providers/:provider', verifyToken, (req, res) => {
     const providerId = req.params.provider;
     if (!connection) {
@@ -57,5 +63,6 @@ router.put('/api/providers/:provider', verifyToken, (req, res) => {
         res.status(200).json({"Provider updated": results.affectedRows});
     });
 });
+*/
 
 module.exports = router;

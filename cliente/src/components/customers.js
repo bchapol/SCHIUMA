@@ -6,29 +6,11 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const Products = () => {
   const { filter } = useParams();  
   const [selectedFilter, setSelectedFilter] = useState(filter || 'all'); // Filtro inicial desde la URL
-  const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
-  
-  const [employees, setEmployees] = useState([]);
 
-
-/*
-const decreaseStock = () => {
-  if (stockAmount > initialStock) {
-    setStockAmount((prev) => prev - 1);
-  }
-};*/
-
-/*const saveStockChange = () => {
-  //alert(`Se añadirá ${stockAmount} al stock del producto: ${selectedProduct?.product_name}`);
-  
-  
-  setShowModal(false);
-};*/
-
-
+  const [customers, setCustomers] = useState([]);
 
 
 //
@@ -39,7 +21,7 @@ const decreaseStock = () => {
       return;
     }
 
-    let url = "http://localhost:3000/api/employees";
+    let url = "http://localhost:3000/api/customers";
     if (selectedFilter && selectedFilter !== 'all') {
       url += `/${selectedFilter}`;
     }
@@ -51,27 +33,27 @@ const decreaseStock = () => {
       },
     })
       .then((response) => response.json())
-      .then((data) => setEmployees(data))
+      .then((data) => setCustomers(data))
       .catch((error) => console.error("Error al obtener los productos:", error));
   }, [selectedFilter]);
 
-  const handleAddEmployee = () => {
-    navigate('/add-employee');
+  const handleAddCustomer = () => {
+    navigate('/add-customer');
   };
 
-  const handleEditProduct = async (pk_product) => {
-    alert(`Editar producto con ID: ${pk_product}`);
-    navigate(`/edit-product/${pk_product}`);
+  const handleEditCustomer = async (pk_customer) => {
+    alert(`Editar cliente con ID: ${pk_customer}`);
+    navigate(`/edit-customer/${pk_customer}`);
   };
 
-  const DeleteProduct = async (pk_product) => {
+  const DeleteCustomer = async (pk_customer) => {
     const token = localStorage.getItem("token");
     if (!token) {
       setError("No estás autenticado.");
       return;
     }
     try {
-      const response = await fetch(`http://localhost:3000/api/products/${pk_product}`, {
+      const response = await fetch(`http://localhost:3000/api/customers/${pk_customer}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -112,13 +94,13 @@ const decreaseStock = () => {
                               <a className="nav-link" href="/products" style={{ color: 'white' }}>Productos</a>
                             </li>
                             <li className="nav-item" style={{ margin: '0 15px' }}>
-                                <a className="nav-link" href="/customers" style={{ color: 'white' }}>Clientes</a>
+                              <a className="nav-link active" aria-current="page" href="/customers" style={{ backgroundColor: 'white', color: '#1E8A71' }}>Clientes</a>
                             </li>
                             <li className="nav-item" style={{ margin: '0 15px' }}>
                                 <a className="nav-link" href="/providers" style={{ color: 'white' }}>Proveedores</a>
                             </li>
                             <li className="nav-item" style={{ margin: '0 15px' }}>
-                              <a className="nav-link active" aria-current="page" href="/employees" style={{ backgroundColor: 'white', color: '#1E8A71' }}>Empleados</a>
+                                <a className="nav-link" href="/employees" style={{ color: 'white' }}>Empleados</a>
                             </li>
                             <li className="nav-item" style={{ margin: '0 15px' }}>
                                 <a className="nav-link" href="#" style={{ color: 'white' }}>Salida</a>
@@ -137,31 +119,32 @@ const decreaseStock = () => {
 
 
       <div className="container mt-5">
-        <h2 className="mb-4 text-center">Lista de Empleados</h2>
-        <Button className="mb-3" variant="primary" onClick={handleAddEmployee}>Agregar Nuevo Empleado</Button>
+        <h2 className="mb-4 text-center">Lista de Clientes</h2>
+        <Button className="mb-3" variant="primary" onClick={handleAddCustomer}>Agregar Nuevo Cliente</Button>
         {message && <div className="alert alert-warning text-center">{message}</div>}
         <table className="table table-hover table-bordered">
           <thead className="table-dark text-center">
             <tr>
               <th>Imagen</th>
-              <th>Nombre</th>
-              <th>Role</th>
-              <th>Correo</th>
+              <th>Cliente</th>
+              <th>Dirección</th>
+              <th>Telefono</th>
               <th>Estado</th>
               <th>Opciones</th>
             </tr>
           </thead>
           <tbody>
-            {employees.length > 0 ? (
-              employees.map((employee) => (
-                <tr key={employee.pk_employee} className="align-middle text-center">
-                  <td><img src={`http://localhost:3000/images/${employee.image}`} alt={employee.name} style={{ width: '100px', height: '100px' }} /></td>
-                  <td>{employee.employee_name}</td>
-                  <td>{employee.role}</td>
-                  <td>{employee.email}</td>
-                  <td>{employee.status ? "Activo" : "Inactivo"}</td>
+            {customers.length > 0 ? (
+              customers.map((customer) => (
+                <tr key={customer.pk_customer} className="align-middle text-center">
+                  <td><img src={`http://localhost:3000/images/${customer.image}`} alt={customer.customer_name} style={{ width: '100px', height: '100px' }} /></td>
+                  <td>{customer.customer_name}</td>
+                  <td>{customer.address}</td>
+                  <td>{customer.phone}</td>
+                  <td>{customer.status ? "Activo" : "Inactivo"}</td>
                   <td>
-                    
+                  <button className="btn btn-warning btn-sm me-2 m-2" onClick={() => handleEditCustomer(customer.pk_customer)}>Editar</button>
+                  <button className="btn btn-danger btn-sm m-2" onClick={() => DeleteCustomer(customer.pk_customer)}>Eliminar</button>
                   </td>
                 </tr>
               ))
