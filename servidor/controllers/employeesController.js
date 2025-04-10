@@ -20,63 +20,68 @@ const getEmployees = (request, response) => {
 };
 
 const postEmployees = async (request, response) => {
-    const { pk_employee } = request.params;
     const { name, email, phone, fk_role, password } = request.body;
     const image = request.file ? `users/${request.file.filename}` : null;
-
+  
     if (!image) {
-        return response.status(400).json({ error: "La imagen es obligatoria" });
+      return response.status(400).json({ error: "La imagen es obligatoria" });
     }
-    
-    connection.beginTransaction(async(err) =>{
-        if(err){
-            return request.status(500).json({error: err.message});
-        }
-
-        try{
-            const salt = await bcrypt.genSalt(10);
-            const encryPass = await bcrypt.hash(password, salt);
-
+  
+    connection.beginTransaction(async (err) => {
+      if (err) {
+        return response.status(500).json({ error: err.message });
+      }
+  
+      try {
+        const salt = await bcrypt.genSalt(10);
+        const encryPass = await bcrypt.hash(password, salt);
+  
+        // Insertar en tabla users
+        connection.query(
+          "INSERT INTO users (name, email, phone, image) VALUES (?, ?, ?, ?)",
+          [name, email, phone, image],
+          (error1, result1) => {
+            if (error1) {
+              return connection.rollback(() => {
+                response.status(500).json({ error: error1.message });
+              });
+            }
+  
+            const fk_user = result1.insertId;
+  
+            // Insertar en tabla employees
             connection.query(
-                "INSERT INTO users (name, email, phone, image) VALUES (?, ?, ?, ?)",
-                [name, email, phone, image],
-                (error, results) => {
-                    if(error){
-                        return connection.rollback(() => {
-                            results.status(500).json({error: error.message});
-                        });
-                    }
-
-                    const fk_user = results.pk_user;
-
-                    connection.query(
-                        "INSERT INTO employees (fk_user, fk_role, password) VALUES (?, ?, ?)",
-                        [fk_user, fk_role, encryPass],
-                        (error, response) => {
-                            if(error){
-                                return connection.rollback(() =>{
-                                    response.status(500).json({error: error.message});
-                                });
-                            }
-                            connection.commit((err) => {
-                                if (err) {
-                                    return connection.rollback(() => {
-                                        response.status(500).json({ error: err.message });
-                                    });
-                                }
-                                response.status(201).json({ message: "Empleado añadido correctamente" });
-                            });
-                        }
-                    )
+              "INSERT INTO employees (fk_user, fk_role, password) VALUES (?, ?, ?)",
+              [fk_user, fk_role, encryPass],
+              (error2) => {
+                if (error2) {
+                  return connection.rollback(() => {
+                    response.status(500).json({ error: error2.message });
+                  });
                 }
-            )
-        }catch (error) {
-            connection.rollback(() => {
-                res.status(500).json({ error: error.message });
-            });
-        }
+  
+                connection.commit((commitErr) => {
+                  if (commitErr) {
+                    return connection.rollback(() => {
+                      response.status(500).json({ error: commitErr.message });
+                    });
+                  }
+  
+                  return response
+                    .status(201)
+                    .json({ message: "Empleado añadido correctamente" });
+                });
+              }
+            );
+          }
+        );
+      } catch (error) {
+        connection.rollback(() => {
+          response.status(500).json({ error: error.message });
+        });
+      }
     });
-};
+  };  
 
 const putEmployees = async (request, response) => {
     const { pk_employee } = request.params;

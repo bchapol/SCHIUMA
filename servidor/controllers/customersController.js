@@ -9,7 +9,17 @@ const getCustomers =  (req, res) => {
             res.status(500).json({ error: error.message });
             return;
         }
-        res.status(200).json(results);
+
+        const customers = results.map((customer) => {
+            // Verificar si hay una imagen guardada
+            if (customer.image) {
+                // Si la imagen existe, obtenemos el archivo binario de la base de datos
+                customer.image = `${customer.image.toString('base64')}`;
+            }
+            return customer;
+        });
+
+        res.status(200).json(customers);
     });
 };
 
@@ -31,16 +41,57 @@ const getCustomersById = (req, res) => {
 
 // Agregar un nuevo cliente
 const postCustomers = (req, res) => {
-    const {fk_user, rfc, address} = req.body;
-
-    connection.query('INSERT INTO customers (fk_user, rfc, address) VALUES (?,?,?)', [fk_user, rfc, address], (error, results) => {
-        if (error) {
-            res.status(500).json({ error: error.message });
-            return;
+    const { name, email, phone, rfc, address } = req.body;
+    const image = req.file ? `users/${req.file.filename}` : null;
+  
+    if (!image) {
+      return res.status(400).json({ error: "La imagen es obligatoria" });
+    }
+  
+    connection.beginTransaction((err) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+  
+      // Insertar en tabla users
+      connection.query(
+        "INSERT INTO users (name, email, phone, image) VALUES (?, ?, ?, ?)",
+        [name, email, phone, image],
+        (error1, result1) => {
+          if (error1) {
+            return connection.rollback(() => {
+              res.status(500).json({ error: error1.message });
+            });
+          }
+  
+          const fk_user = result1.insertId;
+  
+          // Insertar en tabla customers
+          connection.query(
+            "INSERT INTO customers (fk_user, rfc, address) VALUES (?, ?, ?)",
+            [fk_user, rfc, address],
+            (error2) => {
+              if (error2) {
+                return connection.rollback(() => {
+                  res.status(500).json({ error: error2.message });
+                });
+              }
+  
+              connection.commit((commitErr) => {
+                if (commitErr) {
+                  return connection.rollback(() => {
+                    res.status(500).json({ error: commitErr.message });
+                  });
+                }
+  
+                return res.status(201).json({ message: "Cliente añadido correctamente" });
+              });
+            }
+          );
         }
-        res.status(200).json({"New customer added": results.affectedRows});
+      );
     });
-};
+  };
 
 // Actualizar un cliente por ID
 const putCustomers = (req, res) => {

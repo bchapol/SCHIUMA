@@ -6,29 +6,11 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 const Products = () => {
   const { filter } = useParams();  
   const [selectedFilter, setSelectedFilter] = useState(filter || 'all'); // Filtro inicial desde la URL
-  const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
-  
-  const [employees, setEmployees] = useState([]);
 
-
-/*
-const decreaseStock = () => {
-  if (stockAmount > initialStock) {
-    setStockAmount((prev) => prev - 1);
-  }
-};*/
-
-/*const saveStockChange = () => {
-  //alert(`Se añadirá ${stockAmount} al stock del producto: ${selectedProduct?.product_name}`);
-  
-  
-  setShowModal(false);
-};*/
-
-
+  const [customers, setCustomers] = useState([]);
 
 
 //
@@ -39,7 +21,7 @@ const decreaseStock = () => {
       return;
     }
 
-    let url = "http://localhost:3000/api/employees";
+    let url = "http://localhost:3000/api/customers";
     if (selectedFilter && selectedFilter !== 'all') {
       url += `/${selectedFilter}`;
     }
@@ -51,12 +33,12 @@ const decreaseStock = () => {
       },
     })
       .then((response) => response.json())
-      .then((data) => setEmployees(data))
+      .then((data) => setCustomers(data))
       .catch((error) => console.error("Error al obtener los productos:", error));
   }, [selectedFilter]);
 
-  const handleAddEmployee = () => {
-    navigate('/add-employee');
+  const handleAddCustomer = () => {
+    navigate('/add-customer');
   };
 
   const handleEditProduct = async (pk_product) => {
@@ -118,29 +100,29 @@ const decreaseStock = () => {
 
 
       <div className="container mt-5">
-        <h2 className="mb-4 text-center">Lista de Empleados</h2>
-        <Button className="mb-3" variant="primary" onClick={handleAddEmployee}>Agregar Nuevo Empleado</Button>
+        <h2 className="mb-4 text-center">Lista de clientes</h2>
+        <Button className="mb-3" variant="primary" onClick={handleAddCustomer}>Agregar Nuevo Cliente</Button>
         {message && <div className="alert alert-warning text-center">{message}</div>}
         <table className="table table-hover table-bordered">
           <thead className="table-dark text-center">
             <tr>
               <th>Imagen</th>
-              <th>Nombre</th>
-              <th>Role</th>
-              <th>Correo</th>
+              <th>Cliente</th>
+              <th>Dirección</th>
+              <th>Telefono</th>
               <th>Estado</th>
               <th>Opciones</th>
             </tr>
           </thead>
           <tbody>
-            {employees.length > 0 ? (
-              employees.map((employee) => (
-                <tr key={employee.pk_employee} className="align-middle text-center">
-                  <td><img src={`http://localhost:3000/images/${employee.image}`} alt={employee.name} style={{ width: '100px', height: '100px' }} /></td>
-                  <td>{employee.employee_name}</td>
-                  <td>{employee.role}</td>
-                  <td>{employee.email}</td>
-                  <td>{employee.status ? "Activo" : "Inactivo"}</td>
+            {customers.length > 0 ? (
+              customers.map((customer) => (
+                <tr key={customer.pk_customer} className="align-middle text-center">
+                  <td><img src={`http://localhost:3000/images/${customer.image}`} alt={customer.customer_name} style={{ width: '100px', height: '100px' }} /></td>
+                  <td>{customer.customer_name}</td>
+                  <td>{customer.address}</td>
+                  <td>{customer.phone}</td>
+                  <td>{customer.status ? "Activo" : "Inactivo"}</td>
                   <td>
                     
                   </td>

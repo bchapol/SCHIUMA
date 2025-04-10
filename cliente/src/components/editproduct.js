@@ -206,17 +206,18 @@ const ProductForm = () => {
     return (
         <>
             <Navbar bg="dark" variant="dark" expand="lg">
-                <Container>
-                    <Navbar.Brand href="/">Gestión de Productos</Navbar.Brand>
-                    <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                    <Navbar.Collapse id="basic-navbar-nav">
+                    <Container>
+                      <Navbar.Brand href="/">Gestión de Productos</Navbar.Brand>
+                      <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                      <Navbar.Collapse id="basic-navbar-nav">
                         <Nav className="me-auto">
-                            <Nav.Link href="/">Inicio</Nav.Link>
-                            <Nav.Link href="/products">Productos</Nav.Link>
+                          <Nav.Link href="/">Inicio</Nav.Link>
+                          <Nav.Link href="/products">Productos</Nav.Link>
+                          <Nav.Link href="/employees">Empleados</Nav.Link>
                         </Nav>
                         <Button variant="outline-light">Cerrar sesión</Button>
-                    </Navbar.Collapse>
-                </Container>
+                      </Navbar.Collapse>
+                    </Container>
             </Navbar>
 
             <div className="container mt-5">

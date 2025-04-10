@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { jwtDecode } from "jwt-decode";
-import { useNavigate } from "react-router-dom";  // Importamos useNavigate
+import { useNavigate} from "react-router-dom";  // Importamos useNavigate
+import "bootstrap/dist/css/bootstrap.min.css";
 
-const Login = () => {
+const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -47,44 +48,70 @@ const Login = () => {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-      <div className="p-4 bg-white rounded-4 shadow-lg login-box">
-        <h3 className="text-center mb-4 fw-bold text-primary">Bienvenido</h3>
-        <p className="text-center text-muted mb-4">Por favor, inicia sesión para continuar</p>
-        
+    <div className="d-flex vh-100">
+      {/* Lado Izquierdo - Login */}
+      <div className="col-md-6 d-flex flex-column align-items-center justify-content-center bg-white p-5">
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Lotus_flower.svg/1200px-Lotus_flower.svg.png"
+          alt="Lotus Logo"
+          style={{ width: "100px", marginBottom: "20px" }}
+        />
+        <h4 className="mb-4">Schiuma</h4>
+        <p>Ingresa los datos solicitados</p>
         <form onSubmit={user_employees}>
-          <div className="mb-3">
-            <label htmlFor="email" className="form-label fw-semibold">Correo electrónico</label>
-            <input
-              type="email"
-              className="form-control input-style"
-              id="email"
-              placeholder="Ingrese su correo"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="mb-3">
-            <label htmlFor="password" className="form-label fw-semibold">Contraseña</label>
-            <input
-              type="password"
-              className="form-control input-style"
-              id="password"
-              placeholder="Ingrese su contraseña"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          {error && <p className="text-danger text-center">{error}</p>}
-          <button type="submit" className="btn btn-primary w-100 py-2 shadow-sm">
-            Ingresar
-          </button>
+        <input
+          type="email"
+          className="form-control mb-3"
+          id="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          className="form-control mb-3"
+          id="password"
+          placeholder="Contraseña"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        {error && <p className="text-danger text-center">{error}</p>}
+        <button
+          className="btn btn-primary w-100 mb-2"
+          style={{
+            background: "linear-gradient(to right, #1E8A71, #CAE0BC)",
+            border: "none",
+          }}
+        >
+          Iniciar sesión
+        </button>
         </form>
+      </div>
+
+      {/* Lado Derecho - Descripción */}
+      <div
+        className="col-md-6 d-flex flex-column justify-content-center align-items-center text-white text-center"
+        style={{
+          background: "linear-gradient(to right, #1E8A71, #CAE0BC)",
+          color: "#fff",
+        }}
+      >
+        <div className="p-5">
+          <h2 className="mb-4 fw-bold">We are more than just a company</h2>
+          <p>
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          </p>
+          <p>
+            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+            nisi ut aliquip ex ea commodo consequat.
+          </p>
+        </div>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default LoginPage;
