@@ -13,7 +13,7 @@ const {
     putEmployees,
     deleteEmployees,
     userEmployees,
-    getPKEmployee,
+    getEmployeesById
 } = require("../controllers/employeesController");
 
 /**
@@ -197,6 +197,6 @@ router.delete("/api/employees/:pk_employee", verifyToken, deleteEmployees);
  */
 router.post("/api/user_employees", userEmployees);
 
-router.get("/api/userdata",  verifyToken, getPKEmployee);
+router.get("/api/employees/:pk_employee", verifyToken, getEmployeesById);
 
 module.exports = router;

@@ -59,9 +59,9 @@ const decreaseStock = () => {
     navigate('/add-employee');
   };
 
-  const handleEditProduct = async (pk_product) => {
-    alert(`Editar producto con ID: ${pk_product}`);
-    navigate(`/edit-product/${pk_product}`);
+  const handleEditProduct = async (pk_employee) => {
+    alert(`Editar producto con ID: ${pk_employee}`);
+    navigate(`/edit-employee/${pk_employee}`);
   };
 
   const DeleteProduct = async (pk_product) => {
@@ -161,7 +161,7 @@ const decreaseStock = () => {
                   <td>{employee.email}</td>
                   <td>{employee.status ? "Activo" : "Inactivo"}</td>
                   <td>
-                    
+                  <button className="btn btn-warning btn-sm me-2 m-2" onClick={() => handleEditProduct(employee.pk_employee)}>Editar</button>
                   </td>
                 </tr>
               ))

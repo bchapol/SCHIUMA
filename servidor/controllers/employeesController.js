@@ -85,7 +85,7 @@ const postEmployees = async (request, response) => {
 
 const putEmployees = async (request, response) => {
     const { pk_employee } = request.params;
-    const { name, email, phone, fk_role, status, currentPassword, newPassword } = request.body;
+    const { name, email, phone, fk_role, currentPassword, newPassword } = request.body;
     const image = request.file ? `users_images/${request.file.filename}` : null;
 
     if (!image) {
@@ -137,8 +137,8 @@ const putEmployees = async (request, response) => {
                                         }
 
                                         connection.query(
-                                            "UPDATE employees SET fk_role = ?, status = ?, password = ? WHERE pk_employee = ?",
-                                            [fk_role, status, newPass, pk_employee],
+                                            "UPDATE employees SET fk_role = ?, password = ? WHERE pk_employee = ?",
+                                            [fk_role, newPass, pk_employee],
                                             (error) => {
                                                 if (error) {
                                                     return connection.rollback(() => {
@@ -209,14 +209,22 @@ const userEmployees = (request, response) => {
     });
 };
 
-const getPKEmployee = (req, res) => {
-    const userId = req.user.pk_employee;
-    res.json({ pk_employee: userId });
-};
+
   
 
 const getEmployeesById = (request, response) => {
-    response.send("El web socket se ha conectado");
+    const { pk_employee } = request.params;
+    connection.query("SELECT * FROM view_employee_complete WHERE pk_employee = ?", [pk_employee], (error, results) => {
+        if (error) {
+            return res.status(500).json({ error: error.message });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'Cliente no encontrado.' });
+        }
+
+        res.status(200).json(results[0]);
+    });
 };
 
 
@@ -226,5 +234,5 @@ module.exports = {
     putEmployees,
     deleteEmployees,
     userEmployees,
-    getPKEmployee
+    getEmployeesById
 };
