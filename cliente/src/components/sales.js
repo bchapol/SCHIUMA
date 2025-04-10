@@ -7,7 +7,8 @@ const SalidaMercancia = () => {
   const [pkEmployee, setPkEmployee] = useState("");
   const [products, setProducts] = useState([]);
   const [productosSeleccionados, setProductosSeleccionados] = useState([]);
-  const [productsSale, setProductsSales] = useState([]);
+  const [salesNumber, setSalesNumber] = useState([]);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -16,48 +17,65 @@ const SalidaMercancia = () => {
         alert("No estás autenticado.");
         return;
       }
-
-      try{
+  
+      try {
+        // Obtener clientes
         const customersRes = await fetch("http://localhost:3000/api/customers", {
-          method: 'GET', headers: { Authorization: `Bearer ${token}` }
+          method: 'GET',
+          headers: { Authorization: `Bearer ${token}` }
         });
-        if(customersRes.ok){
+        if (customersRes.ok) {
           const customersData = await customersRes.json();
-          setCustomers(Array.isArray(customersData) ? customersData: [])
+          setCustomers(Array.isArray(customersData) ? customersData : []);
         }
-      }catch(error){
-        
-      }
-      try{
-        fetch("http://localhost:3000/api/products", {
+  
+        // Obtener el número de venta
+        const response = await fetch("http://localhost:3000/api/salesTransaction", {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            setProducts(Array.isArray(data) ? data : []);
-          })
-          .catch((error) => console.error("Error al obtener los productos:", error));
-        
-      }catch(error){
-        
-      }
-
-      fetch("http://localhost:3000/api/userdata", {
-        headers: {
-          Authorization: `Bearer ${token}`, 
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setPkEmployee(data.pk_employee); 
         });
-      
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Something went wrong');
+        }
+  
+        const data = await response.json();
+        
+        // Verificamos que data.salesNumber exista antes de asignarlo
+        if (data && data.salesNumber) {
+          setSalesNumber(data.salesNumber);
+        } else {
+          console.error("El número de venta no está disponible.");
+        }
+  
+        // Obtener productos
+        const productsRes = await fetch("http://localhost:3000/api/products", {
+          method: "GET",
+          headers: { "Authorization": `Bearer ${token}` },
+        });
+        const productsData = await productsRes.json();
+        setProducts(Array.isArray(productsData) ? productsData : []);
+  
+        // Obtener datos del usuario
+        const userRes = await fetch("http://localhost:3000/api/userdata", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const userData = await userRes.json();
+        setPkEmployee(userData.pk_employee);
+  
+      } catch (error) {
+        console.error("Error occurred:", error);
+      }
     };
+  
     fetchData();
   }, []);
+  
+  
 
   useEffect(() => {
     console.log("pkEmployee actualizado:", pkEmployee);
@@ -74,9 +92,6 @@ const SalidaMercancia = () => {
     }
   };
 
-
-
-
   const eliminarProducto = (pk_product) => {
     setProductosSeleccionados(productosSeleccionados.filter(p => p.pk_product !== pk_product));
   };
@@ -86,7 +101,6 @@ const SalidaMercancia = () => {
       p.pk_product === pk_product ? { ...p, cantidad: nuevaCantidad } : p
     ));
   };
-  
 
   const toggleSeleccion = (product) => {
     const yaSeleccionado = productosSeleccionados.find(p => p.pk_product === product.pk_product);
@@ -105,6 +119,57 @@ const SalidaMercancia = () => {
   const iva = subtotal * 0.16;
   const total = subtotal + iva;
 
+  const confirmarSalida = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("No estás autenticado.");
+      return;
+    }
+
+    // Asegurar que haya productos seleccionados
+    if (productosSeleccionados.length === 0) {
+      alert("Debes seleccionar al menos un producto.");
+      return;
+    }
+
+    // Asegurar que un cliente esté seleccionado
+    if (!selectedCustomer) {
+      alert("Debes seleccionar un cliente.");
+      return;
+    }
+
+    // Estructurar los datos a insertar
+    const salesData = productosSeleccionados.map(product => ({
+      fk_product: product.pk_product,
+      fk_customer: selectedCustomer,  // Cliente seleccionado
+      fk_employee: pkEmployee,  // Empleado autenticado
+      quantity: product.cantidad,
+      date: new Date().toISOString().slice(0, 19).replace("T", " "), // Formato 'YYYY-MM-DD HH:MM:SS'
+      total_price: product.price * product.cantidad,
+      num_transaction: salesNumber // Mantiene el mismo número de transacción
+    }));
+
+    try {
+      const response = await fetch("http://localhost:3000/api/sales", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(salesData),
+      });
+
+      if (response.ok) {
+        alert("Salida de mercancía confirmada.");
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || "Error al registrar la salida.");
+      }
+    } catch (error) {
+      console.error("Error en la solicitud:", error);
+    }
+  };
+
   return (
     <>
       {/* Navbar */}
@@ -114,9 +179,9 @@ const SalidaMercancia = () => {
           <Navbar.Toggle aria-controls="navbar" />
           <Navbar.Collapse id="navbar">
             <Nav className="me-auto">
-              <Nav.Link href="#">Inicio</Nav.Link>
-              <Nav.Link href="#">Productos</Nav.Link>
-              <Nav.Link href="#">Movimientos</Nav.Link>
+              <Nav.Link href="/products">Productos</Nav.Link>
+              <Nav.Link href="/employees">Empleados</Nav.Link>
+              <Nav.Link href="/movements">Movimientos</Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Container>
@@ -128,9 +193,6 @@ const SalidaMercancia = () => {
         <div className="row">
           {/* Columna izquierda: tabla */}
           <div className="col-md-8">
-            <div className="mb-3">
-              <Button variant="primary">Agregar Producto</Button>
-            </div>
             <table className="table table-bordered text-center">
               <thead className="table-dark">
                 <tr>
@@ -162,7 +224,7 @@ const SalidaMercancia = () => {
           {/* Columna derecha: resumen */}
           <div className="col-md-4">
             <div className="bg-light border rounded shadow-sm p-3">
-              <h5 className="fw-bold mb-3">Salida ID #05468</h5>
+              <h5 className="fw-bold mb-3">Salida ID #{salesNumber}</h5>
               {products.length === 0 ? (
                 <p className="text-muted">No hay productos seleccionados.</p>
               ) : (
@@ -212,23 +274,23 @@ const SalidaMercancia = () => {
                   </div>
 
                   <div className="mb-3 m-2">
-                        <label className="form-label">Cliente</label>
-                        <select
-                            name="fk_category"
-                            className="form-control"
-                            value={customers.pk_customer}
-                            required
-                        >
-                            <option value="">Seleccione un cliente</option>
-                            {customers.map(customer => (
-                                <option key={customer.pk_customer} value={customer.pk_customer}>
-                                    {customer.customer_name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    <label className="form-label">Cliente</label>
+                    <select
+                      name="fk_category"
+                      className="form-control"
+                      value={selectedCustomer}
+                      onChange={(e) => setSelectedCustomer(e.target.value)}
+                    >
+                      <option value="">Seleccione un cliente</option>
+                      {customers.map(customer => (
+                        <option key={customer.pk_customer} value={customer.pk_customer}>
+                          {customer.customer_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                  <Button variant="success" className="w-100 mt-4">
+                  <Button variant="success" className="w-100 mt-4" onClick={confirmarSalida}>
                     Confirmar salida
                   </Button>
                 </>
