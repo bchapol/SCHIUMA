@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
 import { Navbar, Nav, Button, Container } from 'react-bootstrap';
+import NavbarComponent from './navbar';
+
 
 const SalidaMercancia = () => {
   const [customers, setCustomers] = useState([]);
@@ -9,12 +11,14 @@ const SalidaMercancia = () => {
   const [productosSeleccionados, setProductosSeleccionados] = useState([]);
   const [salesNumber, setSalesNumber] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
         alert("No estás autenticado.");
+        navigate("/")
         return;
       }
   
@@ -123,6 +127,7 @@ const SalidaMercancia = () => {
     const token = localStorage.getItem("token");
     if (!token) {
       alert("No estás autenticado.");
+      navigate("/")
       return;
     }
 
@@ -161,6 +166,7 @@ const SalidaMercancia = () => {
 
       if (response.ok) {
         alert("Salida de mercancía confirmada.");
+        navigator("/movements")
       } else {
         const errorData = await response.json();
         alert(errorData.message || "Error al registrar la salida.");
@@ -172,20 +178,8 @@ const SalidaMercancia = () => {
 
   return (
     <>
-      {/* Navbar */}
-      <Navbar bg="dark" variant="dark" expand="lg">
-        <Container>
-          <Navbar.Brand href="#">Mi Tienda</Navbar.Brand>
-          <Navbar.Toggle aria-controls="navbar" />
-          <Navbar.Collapse id="navbar">
-            <Nav className="me-auto">
-              <Nav.Link href="/products">Productos</Nav.Link>
-              <Nav.Link href="/employees">Empleados</Nav.Link>
-              <Nav.Link href="/movements">Movimientos</Nav.Link>
-            </Nav>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
+      
+<NavbarComponent/>
 
       {/* Contenido */}
       <div className="container my-4">

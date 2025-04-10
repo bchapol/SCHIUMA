@@ -2,7 +2,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken"); 
 const {connection} = require("../config/config.db");
 
-
+if (!connection) {
+  return res.status(500).json({ error: 'No se pudo establecer conexión con la base de datos.' });
+}
 const getProviders =  (req, res) => {
     connection.query('SELECT * FROM view_providers WHERE status = 1', (error, results) => {
         if (error) {
@@ -25,6 +27,7 @@ const getProviders =  (req, res) => {
 
 const getProvidersById = (req, res) => {
     const providerId = req.params.pk_provider;
+        console.log("ID recibido:", providerId);
     if (!connection) {
         return res.status(500).json({ error: 'Could not establish a connection to the database.' });
     }
@@ -142,11 +145,6 @@ const postProviders = (req, res) => {
     );
   };
   
-  module.exports = {
-    putProviders
-  };
-  
-
 module.exports = {
     getProviders,
     getProvidersById,

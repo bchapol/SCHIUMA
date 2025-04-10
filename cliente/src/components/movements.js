@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
 import { Navbar, Nav, Button, Container } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import NavbarComponent from './navbar';
+
+
 
 const Movements = () => {
   const [movements, setMovements] = useState([]);
@@ -13,6 +16,7 @@ const Movements = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         setError("No estás autenticado.");
+        navigate("/")
         return;
       }
   
@@ -38,22 +42,7 @@ const Movements = () => {
 
   return (
     <>
-      <Navbar bg="dark" variant="dark" expand="lg">
-        <Container>
-          <Navbar.Brand href="/">Movimientos realizados</Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="me-auto">
-              <Nav.Link href="/products">Productos</Nav.Link>
-              <Nav.Link href="/employees">Empleados</Nav.Link>
-              <Nav.Link href="/movements">Movements</Nav.Link>
-            </Nav>
-            <Button variant="outline-light">Cerrar sesión</Button>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-
-
+      <NavbarComponent/>
       <div className="container mt-5">
         <h2 className="mb-4 text-center">Lista de Movimientos</h2>
         <Button className="mb-3" variant="primary" onClick={handleAddSales}>Agregar salida</Button>

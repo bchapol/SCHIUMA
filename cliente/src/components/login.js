@@ -5,7 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import logo from '../logo.svg';
 
 
-const LoginPage = () => {
+const Login= () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -35,7 +35,6 @@ const LoginPage = () => {
         setIsAuthenticated(true);
   
         const decoded = jwtDecode(token);
-        console.log("Token decodificado:", decoded); 
         navigate("/products");
       } else {
         setError(data.message);
@@ -108,4 +107,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default Login;

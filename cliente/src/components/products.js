@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from 'react-router-dom';
+import { href, useNavigate, useParams } from 'react-router-dom';
 import { Navbar, Nav, Button, Container } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import NavbarComponent from './navbar';
+
 
 const Products = () => {
   const { filter } = useParams();  
@@ -11,17 +13,17 @@ const Products = () => {
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
-const [showModal, setShowModal] = useState(false);
-const [stockAmount, setStockAmount] = useState(1);
-const [selectedProduct, setSelectedProduct] = useState({});
-const [initialStock, setInitialStock] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [stockAmount, setStockAmount] = useState(1);
+  const [selectedProduct, setSelectedProduct] = useState({});
+  const [initialStock, setInitialStock] = useState(0);
 
-const handleShowModal = (product) => {
-  setSelectedProduct(product);
-  setInitialStock(product.stock);
-  setStockAmount(product.stock);
-  setShowModal(true);
-};
+  const handleShowModal = (product) => {
+    setSelectedProduct(product);
+    setInitialStock(product.stock);
+    setStockAmount(product.stock);
+    setShowModal(true);
+  };
 
 const handleCloseModal = () => {
   setShowModal(false);
@@ -55,6 +57,7 @@ const saveStockChange = async () => {
   const token = localStorage.getItem("token");
   if (!token) {
     alert("No estás autenticado.");
+    navigate("/")
     return;
   }
 
@@ -75,38 +78,27 @@ const saveStockChange = async () => {
       body: JSON.stringify({ addStock }),
     });
 
-    // Verifica si la respuesta es exitosa
-    const data = await response.json(); // Obtenemos la respuesta como JSON
+    const data = await response.json(); 
 
-    console.log("Response status:", response.status);  // Verifica el código de estado de la respuesta
-    console.log("Response message:", data.message);  // Verifica el mensaje del backend
 
     if (!response.ok) {
       throw new Error(data.message || "Error al actualizar el stock");
     } else {
       alert(data.message || "Stock actualizado correctamente");
-      navigate('/products');
       setShowModal(false);
+      window.location.reload();
     }
-
   } catch (error) {
     console.error("Error al actualizar el stock:", error);
     alert(error.message || "Hubo un error al actualizar el stock.");
   }
 };
 
-
-const handleLogout = () => {
-    localStorage.removeItem("token"); // Si usas token, lo eliminas aquí
-    navigate("/"); // Te redirige al login
-  };
-
-
-//
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
       alert("No estás autenticado.");
+      navigate("/")
       return;
     }
 
@@ -136,7 +128,6 @@ const handleLogout = () => {
   };
 
   const handleEditProduct = async (pk_product) => {
-    alert(`Editar producto con ID: ${pk_product}`);
     navigate(`/edit-product/${pk_product}`);
   };
 
@@ -158,6 +149,7 @@ const handleLogout = () => {
       if (!response.ok) throw new Error("Error al eliminar el producto");
 
       alert("Producto eliminado correctamente");
+      window.location.reload();
     } catch (error) {
       console.error("Error al eliminar el producto:", error);
       alert("Hubo un error al intentar eliminar el producto.");
@@ -175,45 +167,7 @@ const handleLogout = () => {
 
   return (
     <>
-
-      <div className='container-app'>
-            <nav className="navbar navbar-expand-lg" style={{ backgroundColor: '#1E8A71' }} data-bs-theme="light">
-                <div className="container-fluid">
-                    <a className="navbar-brand" href="/" style={{ color: 'white' }}>
-                        <img src="../images/logo_icono_bla.png" alt="Logo" width="40" height="35" className="d-inline-block align-text-top" />
-                        SCHIUMA
-                    </a>
-                    <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                        <span className="navbar-toggler-icon"></span>
-                    </button>
-                    <div className="collapse navbar-collapse" id="navbarNav">
-                        <ul className="navbar-nav mx-auto nav nav-pills">
-                            <li className="nav-item" style={{ margin: '0 15px' }}>
-                                <a className="nav-link active" aria-current="page" href="/products" style={{ backgroundColor: 'white', color: '#1E8A71' }}>Productos</a>
-                            </li>
-                            <li className="nav-item" style={{ margin: '0 15px' }}>
-                                <a className="nav-link" href="/customers" style={{ color: 'white' }}>Clientes</a>
-                            </li>
-                            <li className="nav-item" style={{ margin: '0 15px' }}>
-                                <a className="nav-link" href="/providers" style={{ color: 'white' }}>Proveedores</a>
-                            </li>
-                            <li className="nav-item" style={{ margin: '0 15px' }}>
-                                <a className="nav-link" href="/employees" style={{ color: 'white' }}>Empleados</a>
-                            </li>
-                            <li className="nav-item" style={{ margin: '0 15px' }}>
-                                <a className="nav-link" href="#" style={{ color: 'white' }}>Salida</a>
-                            </li>
-                        </ul>
-                        <div className="ms-auto">
-                            <button className="btn btn-outline-light" onClick={handleLogout}>
-                                Cerrar Sesión
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-        </div>
-
+      <NavbarComponent/>
       <div className="d-flex gap-3 mb-4 justify-content-center flex-wrap m-5">
         {filterOptions.map((filterOption) => (
           <Button

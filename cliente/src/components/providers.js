@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from 'react-router-dom';
 import { Navbar, Nav, Button, Container } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import NavbarComponent from './navbar';
 
 const Products = () => {
   const { filter } = useParams();  
@@ -20,6 +21,7 @@ const Products = () => {
     const token = localStorage.getItem("token");
     if (!token) {
       alert("No estás autenticado.");
+      navigate("/")
       return;
     }
 
@@ -44,9 +46,16 @@ const Products = () => {
   };
 
   const handleEditProvider = async (pk_provider) => {
-    alert(`Editar proveedor con ID: ${pk_provider}`);
+    console.log("ID enviado a navigate:", pk_provider); // Verifica que el ID es correcto
+    if (!pk_provider) {
+      console.error("El ID del proveedor es undefined");
+      return;
+    }
+
     navigate(`/edit-provider/${pk_provider}`);
-  };
+};
+
+
 
   const DeleteProduct = async (pk_product) => {
     const token = localStorage.getItem("token");
@@ -66,6 +75,7 @@ const Products = () => {
       if (!response.ok) throw new Error("Error al eliminar el producto");
 
       alert("Producto eliminado correctamente");
+      window.location.reload();
     } catch (error) {
       console.error("Error al eliminar el producto:", error);
       alert("Hubo un error al intentar eliminar el producto.");
@@ -80,45 +90,7 @@ const Products = () => {
 
   return (
     <>
-      <div className='container-app'>
-            <nav className="navbar navbar-expand-lg" style={{ backgroundColor: '#1E8A71' }} data-bs-theme="light">
-                <div className="container-fluid">
-                    <a className="navbar-brand" href="/" style={{ color: 'white' }}>
-                        <img src="../images/logo_icono_bla.png" alt="Logo" width="40" height="35" className="d-inline-block align-text-top" />
-                        SCHIUMA
-                    </a>
-                    <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                        <span className="navbar-toggler-icon"></span>
-                    </button>
-                    <div className="collapse navbar-collapse" id="navbarNav">
-                        <ul className="navbar-nav mx-auto nav nav-pills">
-                            <li className="nav-item" style={{ margin: '0 15px' }}>
-                            <a className="nav-link" href="/products" style={{ color: 'white' }}>Productos</a>
-                            </li>
-                            <li className="nav-item" style={{ margin: '0 15px' }}>
-                                <a className="nav-link" href="/customers" style={{ color: 'white' }}>Clientes</a>
-                            </li>
-                            <li className="nav-item" style={{ margin: '0 15px' }}>
-                                <a className="nav-link active" aria-current="page" href="/providers" style={{ backgroundColor: 'white', color: '#1E8A71' }}>Proveedores</a>
-                            </li>
-                            <li className="nav-item" style={{ margin: '0 15px' }}>
-                                <a className="nav-link" href="/employees" style={{ color: 'white' }}>Empleados</a>
-                            </li>
-                            <li className="nav-item" style={{ margin: '0 15px' }}>
-                                <a className="nav-link" href="#" style={{ color: 'white' }}>Salida</a>
-                            </li>
-                        </ul>
-                        <div className="ms-auto">
-                            <button className="btn btn-outline-light" onClick={handleLogout}>
-                                Cerrar Sesión
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-        </div>
-
-
+      <NavbarComponent/>
 
       <div className="container mt-5">
         <h2 className="mb-4 text-center">Lista de Provedores</h2>

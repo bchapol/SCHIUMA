@@ -95,7 +95,8 @@ const getProductsById = (req, res) => {
 };
 
 const putProducts = (req, res) => {
-    const pk_product = req.params.product;
+    const pk_product = req.params.pk_product;
+    console.log("pk",pk_product);
     const { fk_provider, fk_category, expiration, name, price, stock, description } = req.body;
     
     // Primero, obtenemos el producto actual para verificar su imagen

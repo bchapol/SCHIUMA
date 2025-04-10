@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Navbar, Nav, Button, Container } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useParams, useNavigate } from 'react-router-dom';
+import NavbarComponent from './navbar';
+
 
 const ProductForm = () => {
     const { pk_product } = useParams(); // Obtiene el ID del producto de la URL
@@ -83,6 +85,7 @@ const ProductForm = () => {
             }
 
             //PRODUCT BY ID
+            console.log(pk_product)
             if(pk_product){
                 try {
                     const productProduct = await fetch(`http://localhost:3000/api/products/${pk_product}`, {
@@ -168,8 +171,6 @@ const ProductForm = () => {
         if (productCurrenly.product_image instanceof File) {
             formDataToSend.append('image', productCurrenly.product_image);
         }
-        
-
         try {
             const response = await fetch(`http://localhost:3000/api/products${pk_product ? `/${pk_product}` : ''}`, {
                 method: pk_product ? 'PUT' : 'POST',
@@ -182,6 +183,7 @@ const ProductForm = () => {
 
             if (response.ok) {
                 setMessage('Producto actualizado exitosamente');
+                alert('Producto actualizado exitosamente');
                 setProductCurrenly({
                     pk_product: '',
                     product_image: '',
@@ -195,6 +197,7 @@ const ProductForm = () => {
                     pk_provider: '',
                     product_provider: ''
                 });
+                navigate('/products')
             } else {
                 setMessage(data.error || 'Error al agregar el producto');
             }
@@ -203,51 +206,9 @@ const ProductForm = () => {
         }
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem("token"); // Si usas token, lo eliminas aquí
-        navigate("/"); // Te redirige al login
-      };
-
     return (
         <>
-            <div className='container-app'>
-            <nav className="navbar navbar-expand-lg" style={{ backgroundColor: '#1E8A71' }} data-bs-theme="light">
-                <div className="container-fluid">
-                    <a className="navbar-brand" href="/" style={{ color: 'white' }}>
-                        <img src="../images/logo_icono_bla.png" alt="Logo" width="40" height="35" className="d-inline-block align-text-top" />
-                        SCHIUMA
-                    </a>
-                    <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                        <span className="navbar-toggler-icon"></span>
-                    </button>
-                    <div className="collapse navbar-collapse" id="navbarNav">
-                        <ul className="navbar-nav mx-auto nav nav-pills">
-                            <li className="nav-item" style={{ margin: '0 15px' }}>
-                                <a className="nav-link active" aria-current="page" href="/products" style={{ backgroundColor: 'white', color: '#1E8A71' }}>Productos</a>
-                            </li>
-                            <li className="nav-item" style={{ margin: '0 15px' }}>
-                                <a className="nav-link" href="/customers" style={{ color: 'white' }}>Clientes</a>
-                            </li>
-                            <li className="nav-item" style={{ margin: '0 15px' }}>
-                                <a className="nav-link" href="/providers" style={{ color: 'white' }}>Proveedores</a>
-                            </li>
-                            <li className="nav-item" style={{ margin: '0 15px' }}>
-                                <a className="nav-link" href="/employees" style={{ color: 'white' }}>Empleados</a>
-                            </li>
-                            <li className="nav-item" style={{ margin: '0 15px' }}>
-                                <a className="nav-link" href="#" style={{ color: 'white' }}>Salida</a>
-                            </li>
-                        </ul>
-                        <div className="ms-auto">
-                            <button className="btn btn-outline-light" onClick={handleLogout}>
-                                Cerrar Sesión
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-        </div>
-
+            <NavbarComponent/>
             <div className="container mt-5">
 
                 <h2 className="mb-4"> Editar producto </h2>
