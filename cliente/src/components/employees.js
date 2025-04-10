@@ -88,32 +88,51 @@ const decreaseStock = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Si usas token, lo eliminas aquí
+    navigate("/"); // Te redirige al login
+  };
+
 
   return (
     <>
-      <Navbar bg="dark" variant="dark" expand="lg">
-        <Container>
-          <Navbar.Brand href="/">Gestión de Productos</Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="me-auto">
-              <Nav.Link href="/">Inicio</Nav.Link>
-              <Nav.Link href="/products">Productos</Nav.Link>
-              <Nav.Link href="/employees">Empleados</Nav.Link>
-            </Nav>
-            <Button variant="outline-light">Cerrar sesión</Button>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-
-    <Nav variant="pills" defaultActiveKey="/home">
-      <Nav.Item>
-        <Nav.Link href="/home">Active</Nav.Link>
-      </Nav.Item>
-      <Nav.Item>
-        <Nav.Link eventKey="link-1">Option 2</Nav.Link>
-      </Nav.Item>
-    </Nav>
+      <div className='container-app'>
+            <nav className="navbar navbar-expand-lg" style={{ backgroundColor: '#1E8A71' }} data-bs-theme="light">
+                <div className="container-fluid">
+                    <a className="navbar-brand" href="/" style={{ color: 'white' }}>
+                        <img src="../images/logo_icono_bla.png" alt="Logo" width="40" height="35" className="d-inline-block align-text-top" />
+                        SCHIUMA
+                    </a>
+                    <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span className="navbar-toggler-icon"></span>
+                    </button>
+                    <div className="collapse navbar-collapse" id="navbarNav">
+                        <ul className="navbar-nav mx-auto nav nav-pills">
+                            <li className="nav-item" style={{ margin: '0 15px' }}>
+                              <a className="nav-link" href="/products" style={{ color: 'white' }}>Productos</a>
+                            </li>
+                            <li className="nav-item" style={{ margin: '0 15px' }}>
+                                <a className="nav-link" href="/customers" style={{ color: 'white' }}>Clientes</a>
+                            </li>
+                            <li className="nav-item" style={{ margin: '0 15px' }}>
+                                <a className="nav-link" href="/providers" style={{ color: 'white' }}>Proveedores</a>
+                            </li>
+                            <li className="nav-item" style={{ margin: '0 15px' }}>
+                              <a className="nav-link active" aria-current="page" href="/employees" style={{ backgroundColor: 'white', color: '#1E8A71' }}>Empleados</a>
+                            </li>
+                            <li className="nav-item" style={{ margin: '0 15px' }}>
+                                <a className="nav-link" href="#" style={{ color: 'white' }}>Salida</a>
+                            </li>
+                        </ul>
+                        <div className="ms-auto">
+                            <button className="btn btn-outline-light" onClick={handleLogout}>
+                                Cerrar Sesión
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
 
 
 

@@ -8,51 +8,12 @@ const ProductForm = () => {
         name: '',
         email: '',
         phone: '',
-        fk_role: '',
-        password: '',
         image: ''
     });
 
     const [message, setMessage] = useState('');
     const [error, setError] = useState(null);
     const navigate = useNavigate();
-
-    const [roles, setRoles] = useState([]);
-
-    // Obtención de roles
-    useEffect(() => {
-        const fetchRoles = async () => {
-            const token = localStorage.getItem("token");
-            console.log(token);
-            if (!token) {
-                setError("No estás autenticado.");
-                return;
-            }
-
-            try {
-                const response = await fetch('http://localhost:3000/api/roles', {
-                    method: "GET",
-                    headers: {
-                        "Authorization": `Bearer ${token}`
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    if (Array.isArray(data)) {
-                        setRoles(data);
-                    } else {
-                        console.error("Error: roles no es un array", data);
-                    }
-                } else {
-                    console.error("Error en la solicitud de roles", response.statusText);
-                }
-            } catch (error) {
-                console.error("Error fetching roles:", error);
-            }
-        };
-        fetchRoles();
-    }, []);
 
     const handleChange = (e) => {
         const { name, value, type } = e.target;
@@ -71,14 +32,12 @@ const ProductForm = () => {
         formDataToSend.append('name', formData.name);
         formDataToSend.append('email', formData.email);
         formDataToSend.append('phone', formData.phone);
-        formDataToSend.append('fk_role', formData.fk_role);
-        formDataToSend.append('password', formData.password);
         formDataToSend.append('image', formData.image);
         for (let pair of formDataToSend.entries()) {
             console.log(pair[0]+ ': ' + pair[1]);
         }
         try {
-            const response = await fetch('http://localhost:3000/api/employees', {
+            const response = await fetch('http://localhost:3000/api/providers', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -93,8 +52,6 @@ const ProductForm = () => {
                     name: '',
                     email: '',
                     phone: '',
-                    fk_role: '',
-                    password: '',
                     image: ''
                 });
             } else {
@@ -152,7 +109,7 @@ const ProductForm = () => {
         </div>
 
             <div className="container mt-5">
-                <h2 className="mb-4">Agregar nuevo empleado</h2>
+                <h2 className="mb-4">Agregar nuevo proveedor</h2>
                 {message && <div className="alert alert-info">{message}</div>}
                 <form onSubmit={handleSubmit} className="border p-4 rounded shadow-sm">
                     <div className="mb-3">
@@ -167,39 +124,18 @@ const ProductForm = () => {
                         />
                     </div>
                     <div className="mb-3">
-                        <label className="form-label">Nombre completo</label>
+                        <label className="form-label">Nombre del proveedor</label>
                         <input type="text" name="name" className="form-control" value={formData.name} onChange={handleChange} required />
                     </div>
                     <div className="mb-3">
-                        <label className="form-label">Correo electronico</label>
+                        <label className="form-label">Correo electronico del proveedor</label>
                         <input type="email" name="email" className="form-control" value={formData.email} onChange={handleChange} required />
                     </div>
                     <div className="mb-3">
-                        <label className="form-label">Número de teléfono</label>
+                        <label className="form-label">Número telefonico del proveedor</label>
                         <input type="text" name="phone" className="form-control" value={formData.phone} onChange={handleChange} required />
                     </div>
-                    <div className="mb-3">
-                        <label className="form-label">Roles</label>
-                        <select
-                            name="fk_role"
-                            className="form-control"
-                            value={formData.fk_role}
-                            onChange={handleChange}
-                            required
-                        >
-                            <option value="">Seleccione un proveedor</option>
-                            {roles.map(role => (
-                                <option key={role.pk_role} value={role.pk_role}>
-                                    {role.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="mb-3">
-                        <label className="form-label">Contraseña del usuario empleado</label>
-                        <input type="text" name="password" className="form-control" value={formData.password} onChange={handleChange} required />
-                    </div>
-                    <button type="submit" className="btn btn-primary">Agregar Producto</button>
+                    <button type="submit" className="btn btn-primary">Agregar Proveedor</button>
                 </form>
             </div>
         </>

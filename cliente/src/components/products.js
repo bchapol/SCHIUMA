@@ -175,20 +175,6 @@ const handleLogout = () => {
 
   return (
     <>
-      <Navbar bg="dark" variant="dark" expand="lg">
-        <Container>
-          <Navbar.Brand href="/">Gestión de Productos</Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="me-auto">
-              <Nav.Link href="/">Inicio</Nav.Link>
-              <Nav.Link href="/products">Productos</Nav.Link>
-              <Nav.Link href="/employees">Empleados</Nav.Link>
-            </Nav>
-            <Button variant="outline-light">Cerrar sesión</Button>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
 
       <div className='container-app'>
             <nav className="navbar navbar-expand-lg" style={{ backgroundColor: '#1E8A71' }} data-bs-theme="light">
@@ -209,7 +195,7 @@ const handleLogout = () => {
                                 <a className="nav-link" href="/customers" style={{ color: 'white' }}>Clientes</a>
                             </li>
                             <li className="nav-item" style={{ margin: '0 15px' }}>
-                                <a className="nav-link" href="#" style={{ color: 'white' }}>Proveedores</a>
+                                <a className="nav-link" href="/providers" style={{ color: 'white' }}>Proveedores</a>
                             </li>
                             <li className="nav-item" style={{ margin: '0 15px' }}>
                                 <a className="nav-link" href="/employees" style={{ color: 'white' }}>Empleados</a>
