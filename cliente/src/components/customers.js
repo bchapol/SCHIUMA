@@ -52,6 +52,7 @@ const Products = () => {
       setError("No estás autenticado.");
       return;
     }
+  
     try {
       const response = await fetch(`http://localhost:3000/api/customers/${pk_customer}`, {
         method: "DELETE",
@@ -60,13 +61,14 @@ const Products = () => {
           "Authorization": `Bearer ${token}`,
         },
       });
-
-      if (!response.ok) throw new Error("Error al eliminar el producto");
-
-      alert("Producto eliminado correctamente");
+  
+      if (!response.ok) throw new Error("Error al eliminar el cliente");
+  
+      setMessage("Cliente eliminado correctamente");
+      setCustomers(customers.filter(customer => customer.pk_customer !== pk_customer)); // Actualiza la lista de clientes
     } catch (error) {
-      console.error("Error al eliminar el producto:", error);
-      alert("Hubo un error al intentar eliminar el producto.");
+      console.error("Error al eliminar el cliente:", error);
+      setMessage("Hubo un error al intentar eliminar el cliente.");
     }
   };
 

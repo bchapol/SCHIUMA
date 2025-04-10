@@ -11,7 +11,8 @@ const {
     getProviders,
     getProvidersById,
     postProviders,
-    putProviders
+    putProviders,
+    deleteProvider
 } = require("../controllers/providersController");
 
 router.get('/api/providers', verifyToken, getProviders)
@@ -21,6 +22,8 @@ router.post("/api/providers", verifyToken, uploadProductPhotos.single('image'), 
 router.get("/api/providers/:pk_provider", verifyToken, getProvidersById);
 
 router.put("/api/providers/:pk_provider", verifyToken, uploadProductPhotos.single('image'), putProviders);
+
+router.delete("/api/providers/:pk_provider", verifyToken, deleteProvider);
 
 /*
 router.get('/api/providers/:provider', verifyToken, (req, res) => {

@@ -48,27 +48,31 @@ const Products = () => {
     navigate(`/edit-provider/${pk_provider}`);
   };
 
-  const DeleteProduct = async (pk_product) => {
+  const DeleteProvider = async (pk_provider) => {
     const token = localStorage.getItem("token");
+    
     if (!token) {
       setError("No estás autenticado.");
       return;
     }
+  
     try {
-      const response = await fetch(`http://localhost:3000/api/products/${pk_product}`, {
+      const response = await fetch(`http://localhost:3000/api/providers/${pk_provider}`, {
         method: "DELETE",
         headers: {
-          "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
         },
       });
-
-      if (!response.ok) throw new Error("Error al eliminar el producto");
-
-      alert("Producto eliminado correctamente");
+  
+      if (!response.ok) throw new Error("Error al eliminar el proveedor");
+  
+      // Actualizar la lista de proveedores tras la eliminación
+      setProviders(providers.filter(provider => provider.pk_provider !== pk_provider));
+  
+      alert("Proveedor eliminado correctamente");
     } catch (error) {
-      console.error("Error al eliminar el producto:", error);
-      alert("Hubo un error al intentar eliminar el producto.");
+      console.error("Error al eliminar el proveedor:", error);
+      alert("Hubo un error al intentar eliminar el proveedor.");
     }
   };
 
@@ -146,6 +150,7 @@ const Products = () => {
                   <td>{provider.status ? "Activo" : "Inactivo"}</td>
                   <td>
                   <button className="btn btn-warning btn-sm me-2 m-2" onClick={() => handleEditProvider(provider.pk_provider)}>Editar</button>
+                  <button className="btn btn-danger btn-sm m-2" onClick={() => DeleteProvider(provider.pk_provider)}>Eliminar</button>
                   </td>
                 </tr>
               ))

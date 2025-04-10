@@ -6,19 +6,22 @@ const EditProviderForm = () => {
         name: '',
         email: '',
         phone: '',
-        image: ''
+        image: null  // Cambié el valor inicial a `null` en lugar de una cadena vacía
     });
 
     const [message, setMessage] = useState('');
     const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const { pk_provider } = useParams();
 
     useEffect(() => {
         const fetchProviderData = async () => {
+            setLoading(true);
             const token = localStorage.getItem('token');
             if (!token) {
                 setError("No estás autenticado.");
+                setLoading(false);
                 return;
             }
 
@@ -34,16 +37,18 @@ const EditProviderForm = () => {
                 if (response.ok) {
                     const data = await response.json();
                     setFormData({
-                        name: data.name,
-                        email: data.email,
-                        phone: data.phone,
-                        image: data.image
+                        name: data[0].provider_name,
+                        email: data[0].email,
+                        phone: data[0].phone,
+                        image: data[0].image || null // Si la imagen está vacía, asignamos null
                     });
                 } else {
                     setError('Error al obtener el proveedor');
                 }
             } catch (err) {
                 setError('Error en la conexión con el servidor');
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -56,7 +61,7 @@ const EditProviderForm = () => {
         if (name === 'image') {
             setFormData((prev) => ({
                 ...prev,
-                image: files[0]
+                image: files[0] || null  // Aseguramos que image se vuelva `null` si no se selecciona nada
             }));
         } else {
             setFormData((prev) => ({
@@ -68,6 +73,26 @@ const EditProviderForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const { name, email, phone } = formData;
+
+        if (!name || !email || !phone) {
+            setMessage('Por favor, llena todos los campos.');
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            setMessage('Por favor, ingresa un email válido.');
+            return;
+        }
+
+        const phoneRegex = /^[0-9]+$/;
+        if (!phoneRegex.test(phone)) {
+            setMessage('El teléfono solo puede contener números.');
+            return;
+        }
+
         const token = localStorage.getItem('token');
         const formDataToSend = new FormData();
 
@@ -77,6 +102,8 @@ const EditProviderForm = () => {
         if (formData.image && typeof formData.image !== 'string') {
             formDataToSend.append('image', formData.image);
         }
+
+        setLoading(true);
 
         try {
             const response = await fetch(`http://localhost:3000/api/providers/${pk_provider}`, {
@@ -97,6 +124,8 @@ const EditProviderForm = () => {
             }
         } catch (err) {
             setMessage('Error en la conexión con el servidor');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -137,17 +166,40 @@ const EditProviderForm = () => {
                 </div>
                 <div className="mb-3">
                     <label className="form-label">Nombre del proveedor</label>
-                    <input type="text" name="name" className="form-control" value={formData.name} onChange={handleChange} required />
+                    <input
+                        type="text"
+                        name="name"
+                        className="form-control"
+                        value={formData.name || ''}
+                        onChange={handleChange}
+                        required
+                    />
                 </div>
                 <div className="mb-3">
                     <label className="form-label">Correo electrónico</label>
-                    <input type="email" name="email" className="form-control" value={formData.email} onChange={handleChange} required />
+                    <input
+                        type="email"
+                        name="email"
+                        className="form-control"
+                        value={formData.email || ''}
+                        onChange={handleChange}
+                        required
+                    />
                 </div>
                 <div className="mb-3">
                     <label className="form-label">Teléfono</label>
-                    <input type="text" name="phone" className="form-control" value={formData.phone} onChange={handleChange} required />
+                    <input
+                        type="text"
+                        name="phone"
+                        className="form-control"
+                        value={formData.phone || ''}
+                        onChange={handleChange}
+                        required
+                    />
                 </div>
-                <button type="submit" className="btn btn-primary">Actualizar Proveedor</button>
+                <button type="submit" className="btn btn-primary" disabled={loading}>
+                    {loading ? 'Cargando...' : 'Actualizar Proveedor'}
+                </button>
             </form>
             <button className="btn btn-secondary mt-3" onClick={handleLogout}>Cerrar sesión</button>
         </div>

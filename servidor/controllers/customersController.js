@@ -159,18 +159,29 @@ const putCustomers = (req, res) => {
 };
 
 const deleteCustomer = (req, res) => {
-  const pk_customer = req.params.pk_customer;
-
-  connection.query('UPDATE users SET status = 0 WHERE pk_user = ?', 
-      [ pk_customer], 
-      (error, results) => {
+    const pk_customer = req.params.pk_customer;
+    console.log(pk_customer);
+    // Verificar si el cliente existe antes de realizar la actualización
+    connection.query('SELECT * FROM customers WHERE pk_customer = ?', [pk_customer], (error, results) => {
       if (error) {
-          res.status(500).json({ error: error.message });
-          return;
+        return res.status(500).json({ error: error.message });
       }
-      res.status(200).json({"Product eliminado": results.affectedRows});
-  });
-};
+  
+      if (results.length === 0) {
+        return res.status(404).json({ error: "Cliente no encontrado" });
+      }
+  
+      // Actualizar el estado del cliente
+      connection.query('UPDATE customers SET status = 0 WHERE pk_customer = ?', [pk_customer], (error, results) => {
+        if (error) {
+          return res.status(500).json({ error: error.message });
+        }
+  
+        // Responder con la cantidad de filas afectadas (el cliente desactivado)
+        res.status(200).json({ message: "Cliente eliminado correctamente", affectedRows: results.affectedRows });
+      });
+    });
+  };  
 
 module.exports = {
     getCustomers,

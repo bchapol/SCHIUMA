@@ -99,11 +99,11 @@ const postProviders = (req, res) => {
           }
   
           // Actualizar la tabla users si se proporciona una nueva imagen
-          let queryUser = "UPDATE users SET name = ?, email = ?, phone = ? WHERE id = ?";
+          let queryUser = "UPDATE users SET name = ?, email = ?, phone = ? WHERE pk_user = ?";
           let queryParams = [name, email, phone, results[0].fk_user];
   
           if (image) {
-            queryUser = "UPDATE users SET name = ?, email = ?, phone = ?, image = ? WHERE id = ?";
+            queryUser = "UPDATE users SET name = ?, email = ?, phone = ?, image = ? WHERE pk_user = ?";
             queryParams = [name, email, phone, image, results[0].fk_user];
           }
   
@@ -141,15 +141,35 @@ const postProviders = (req, res) => {
       }
     );
   };
-  
-  module.exports = {
-    putProviders
+
+  const deleteProvider = (req, res) => {
+    const pk_provider = req.params.pk_provider;
+    console.log(pk_provider);
+    connection.query('SELECT * FROM providers WHERE pk_provider = ?', [pk_provider], (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+    
+      if (results.length === 0) {
+        return res.status(404).json({ error: "Proveedor no encontrado" });
+      }
+    
+      // Si el proveedor existe, proceder con la actualización
+      connection.query('UPDATE providers SET status = 0 WHERE pk_provider = ?', 
+          [ pk_provider], 
+          (updateError, updateResults) => {
+            if (updateError) {
+                return res.status(500).json({ error: updateError.message });
+            }
+            res.status(200).json({"Proveedor eliminado": updateResults.affectedRows});
+      });
+    });
   };
-  
 
 module.exports = {
     getProviders,
     getProvidersById,
     postProviders,
-    putProviders
+    putProviders,
+    deleteProvider
 };
